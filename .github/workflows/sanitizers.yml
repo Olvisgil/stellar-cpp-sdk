@@ -18,6 +18,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install deps (ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libsodium-dev libcurl4-openssl-dev
+      - name: Install deps (macos)
+        if: runner.os == 'macOS'
+        run: brew install libsodium curl
       - run: cmake --preset asan-ubsan
       - run: cmake --build --preset asan-ubsan
       - name: Test
@@ -25,6 +31,7 @@ jobs:
         env:
           ASAN_OPTIONS: detect_leaks=1
           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+          MallocNanoZone: "0"   # ASan on macOS needs nanozone off to interpose
 
   tsan:
     runs-on: ubuntu-24.04
@@ -33,6 +40,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: sudo apt-get update && sudo apt-get install -y libsodium-dev libcurl4-openssl-dev
       - run: cmake --preset tsan
       - run: cmake --build --preset tsan
       - run: ctest --preset tsan
