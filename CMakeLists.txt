@@ -39,6 +39,10 @@ stellar_set_warnings(stellar_base)
 file(GLOB XDR_GENERATED_SOURCES CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/src/xdr/generated/*.cpp")
 add_library(stellar_xdr STATIC ${XDR_GENERATED_SOURCES})
+if(MSVC)
+  # generated tables exceed the 64k-section COFF limit
+  target_compile_options(stellar_xdr PRIVATE /bigobj)
+endif()
 add_library(stellar::xdr ALIAS stellar_xdr)
 target_link_libraries(stellar_xdr PUBLIC stellar::base)
 stellar_set_warnings(stellar_xdr)
