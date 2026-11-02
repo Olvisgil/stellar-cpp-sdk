@@ -22,6 +22,11 @@ include(Warnings)
 # ---------------------------------------------------------------------------
 # stellar::base — Result/Error + encoding utilities (no deps)
 # ---------------------------------------------------------------------------
+# static builds must not emit dllexport/dllimport attributes
+if(NOT BUILD_SHARED_LIBS)
+  add_compile_definitions(STELLAR_SDK_STATIC_DEFINE)
+endif()
+
 add_library(stellar_base STATIC
   src/util/error.cpp
   src/util/encoding.cpp
