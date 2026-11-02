@@ -7,7 +7,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < 1) return 0;
   auto types = all_types();
   const auto& te = types[data[0] % types.size()];
-  ByteSpan in{data + 1, size - 1};
+  stellar::ByteSpan in{data + 1, size - 1};
   if (te.validate(in)) {
     auto re = te.reencode(in);  // canonical re-encode must hold
     (void)re;

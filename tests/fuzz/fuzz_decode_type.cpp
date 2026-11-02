@@ -5,13 +5,15 @@
 // successful decode re-encodes to identical bytes.
 #include "stellar/xdr/generated/types.hpp"
 
+#include <algorithm>
+
 #ifndef FUZZ_XDR_TYPE
 #error "define FUZZ_XDR_TYPE=<TypeName>"
 #endif
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   using namespace stellar::v1::xdr;
-  ByteSpan in{data, size};
+  stellar::ByteSpan in{data, size};
   auto dec = decode<FUZZ_XDR_TYPE>(in);
   if (dec.ok()) {
     auto re = encode(*dec);
