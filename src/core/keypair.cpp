@@ -30,7 +30,9 @@ std::array<std::uint8_t, 32> sha256(ByteSpan data) noexcept {
 }
 
 SecretBytes::SecretBytes(std::array<std::uint8_t, 32> b) : data_(b), empty_(false) {}
-SecretBytes::~SecretBytes() { sodium_memzero(data_.data(), data_.size()); }
+SecretBytes::~SecretBytes() {
+  sodium_memzero(data_.data(), data_.size());
+}
 SecretBytes::SecretBytes(SecretBytes&& o) noexcept : data_(o.data_), empty_(o.empty_) {
   sodium_memzero(o.data_.data(), o.data_.size());
   o.empty_ = true;
@@ -110,8 +112,8 @@ Result<std::array<std::uint8_t, 64>> KeyPair::sign(ByteSpan message) const {
   return sig;
 }
 
-bool KeyPair::verify(const std::array<std::uint8_t, 32>& public_key,
-                     ByteSpan message, ByteSpan signature) noexcept {
+bool KeyPair::verify(const std::array<std::uint8_t, 32>& public_key, ByteSpan message,
+                     ByteSpan signature) noexcept {
   if (signature.size() != 64) return false;
   return crypto_sign_verify_detached(signature.data(), message.data(), message.size(),
                                      public_key.data()) == 0;

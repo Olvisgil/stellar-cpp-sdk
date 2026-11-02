@@ -10,11 +10,13 @@ namespace stellar::inline v1 {
 
 namespace {
 
-Result<xdr::MuxedAccount> to_muxed(const Address& a) { return a.to_muxed_account(); }
+Result<xdr::MuxedAccount> to_muxed(const Address& a) {
+  return a.to_muxed_account();
+}
 
 /// Builds the TransactionSignaturePayload for hashing/signing.
-Result<xdr::TransactionSignaturePayload> sig_payload(const Network& network,
-                                                     xdr::TransactionSignaturePayloadTaggedTransaction tagged) {
+Result<xdr::TransactionSignaturePayload> sig_payload(
+    const Network& network, xdr::TransactionSignaturePayloadTaggedTransaction tagged) {
   xdr::TransactionSignaturePayload p;
   p.networkId = xdr::Hash{network.id()};
   p.taggedTransaction = std::move(tagged);
@@ -139,13 +141,11 @@ Result<xdr::Transaction> TransactionBuilder::build() const {
   }
   // time bounds are mandatory unless explicitly opted out
   if (!no_timeout_) {
-    const bool has_time =
-        (tx_.cond.type() == xdr::PreconditionType::PRECOND_TIME) ||
-        (tx_.cond.type() == xdr::PreconditionType::PRECOND_V2 &&
-         tx_.cond.v2().timeBounds.has_value());
+    const bool has_time = (tx_.cond.type() == xdr::PreconditionType::PRECOND_TIME) ||
+                          (tx_.cond.type() == xdr::PreconditionType::PRECOND_V2 &&
+                           tx_.cond.v2().timeBounds.has_value());
     if (!has_time) {
-      return Error::invalid_argument(
-          "time bounds are required; call no_timeout() to opt out");
+      return Error::invalid_argument("time bounds are required; call no_timeout() to opt out");
     }
   }
   return tx_;
@@ -169,8 +169,7 @@ Result<xdr::FeeBumpTransaction> FeeBumpBuilder::build(xdr::Transaction inner) co
   return out;
 }
 
-Result<xdr::FeeBumpTransaction>
-FeeBumpBuilder::build(const TransactionEnvelope& inner) const {
+Result<xdr::FeeBumpTransaction> FeeBumpBuilder::build(const TransactionEnvelope& inner) const {
   const auto* tx = inner.transaction();
   if (!tx) {
     return Error::invalid_argument("fee-bump inner must be a v1 transaction");
@@ -311,7 +310,9 @@ Result<void> TransactionEnvelope::add_decorated_signature(xdr::DecoratedSignatur
   return {};
 }
 
-Result<Bytes> TransactionEnvelope::to_bytes() const { return xdr::encode(env_); }
+Result<Bytes> TransactionEnvelope::to_bytes() const {
+  return xdr::encode(env_);
+}
 
 Result<std::string> TransactionEnvelope::to_base64() const {
   STELLAR_TRY_ASSIGN(auto bytes, to_bytes());
@@ -323,7 +324,7 @@ Result<std::string> TransactionEnvelope::to_base64() const {
 // ---------------------------------------------------------------------------
 
 Result<xdr::DecoratedSignature> SignatureHelpers::sign(const Signer& signer,
-                                                     ByteSpan signature_base) {
+                                                       ByteSpan signature_base) {
   STELLAR_TRY_ASSIGN(auto sig, signer.sign(signature_base));
   xdr::DecoratedSignature d;
   d.hint = xdr::SignatureHint{signer.signature_hint()};
@@ -340,8 +341,8 @@ xdr::DecoratedSignature SignatureHelpers::hash_x(std::array<std::uint8_t, 32> pr
   return d;
 }
 
-Result<xdr::SignerKey>
-SignatureHelpers::signed_payload_signer_key(const Address& account, ByteSpan payload) {
+Result<xdr::SignerKey> SignatureHelpers::signed_payload_signer_key(const Address& account,
+                                                                   ByteSpan payload) {
   if (payload.empty() || payload.size() > 64) {
     return Error::invalid_argument("signed payload must be 1..64 bytes");
   }
@@ -359,10 +360,8 @@ SignatureHelpers::signed_payload_signer_key(const Address& account, ByteSpan pay
   return xdr::SignerKey::signerKeyTypeEd25519SignedPayload(sp);
 }
 
-Result<xdr::DecoratedSignature>
-SignatureHelpers::signed_payload_signature(const Signer& signer,
-                                           const xdr::SignerKey& key,
-                                           ByteSpan payload, ByteSpan message) {
+Result<xdr::DecoratedSignature> SignatureHelpers::signed_payload_signature(
+    const Signer& signer, const xdr::SignerKey& key, ByteSpan payload, ByteSpan message) {
   // CAP-40: the signed data is payload ++ message
   Bytes data(payload.begin(), payload.end());
   data.insert(data.end(), message.begin(), message.end());
@@ -371,8 +370,8 @@ SignatureHelpers::signed_payload_signature(const Signer& signer,
   STELLAR_TRY_ASSIGN(auto key_bytes, xdr::encode(key));
   const auto n = key_bytes.size();
   xdr::DecoratedSignature d;
-  d.hint = xdr::SignatureHint{{key_bytes[n - 4], key_bytes[n - 3], key_bytes[n - 2],
-                             key_bytes[n - 1]}};
+  d.hint =
+      xdr::SignatureHint{{key_bytes[n - 4], key_bytes[n - 3], key_bytes[n - 2], key_bytes[n - 1]}};
   d.signature = xdr::Signature(sig.begin(), sig.end());
   return d;
 }

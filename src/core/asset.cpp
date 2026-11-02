@@ -38,14 +38,16 @@ Result<xdr::AlphaNum12> make_num12(std::string_view code, std::string_view issue
 bool valid_code(std::string_view code) {
   if (code.empty() || code.size() > 12) return false;
   return std::all_of(code.begin(), code.end(), [](char c) {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
-           c == '/' || c == '-' || c == '.' || c == '_';
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '/' ||
+           c == '-' || c == '.' || c == '_';
   });
 }
 
 }  // namespace
 
-Asset Asset::native() { return Asset{}; }
+Asset Asset::native() {
+  return Asset{};
+}
 
 Result<Asset> Asset::credit(std::string_view code, std::string_view issuer) {
   if (!valid_code(code)) {
@@ -169,16 +171,15 @@ Result<std::array<std::uint8_t, 32>> Asset::liquidity_pool_id(const Asset& a, co
   STELLAR_TRY_ASSIGN(auto xa, aa.to_xdr());
   STELLAR_TRY_ASSIGN(auto xb, bb.to_xdr());
   xdr::LiquidityPoolConstantProductParameters cp{xdr::Asset{xa}, xdr::Asset{xb}, 30};
-  xdr::LiquidityPoolParameters lp =
-      xdr::LiquidityPoolParameters::liquidityPoolConstantProduct(cp);
+  xdr::LiquidityPoolParameters lp = xdr::LiquidityPoolParameters::liquidityPoolConstantProduct(cp);
   STELLAR_TRY_ASSIGN(Bytes bytes, xdr::encode(lp));
   return sha256(ByteSpan(bytes.data(), bytes.size()));
 }
 
 Result<std::array<std::uint8_t, 32>> Asset::sac_contract_id(const Network& n) const {
   STELLAR_TRY_ASSIGN(auto xa, to_xdr());
-  xdr::HashIDPreimageContractId pc{
-      xdr::uint256{n.id()}, xdr::ContractIDPreimage::contractIdPreimageFromAsset(xa)};
+  xdr::HashIDPreimageContractId pc{xdr::uint256{n.id()},
+                                   xdr::ContractIDPreimage::contractIdPreimageFromAsset(xa)};
   xdr::HashIDPreimage pre = xdr::HashIDPreimage::envelopeTypeContractId(pc);
   STELLAR_TRY_ASSIGN(Bytes bytes, xdr::encode(pre));
   return sha256(ByteSpan(bytes.data(), bytes.size()));

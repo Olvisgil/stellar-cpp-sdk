@@ -18,8 +18,8 @@ namespace stellar::inline v1 {
 
 class STELLAR_API Amount {
  public:
-  static constexpr std::int64_t kOne = 10'000'000;              // stroops per unit
-  static constexpr std::int64_t kMaxStroop = INT64_MAX / 10;    // safety rail vs protocol int64
+  static constexpr std::int64_t kOne = 10'000'000;            // stroops per unit
+  static constexpr std::int64_t kMaxStroop = INT64_MAX / 10;  // safety rail vs protocol int64
 
   explicit constexpr Amount(std::int64_t stroops = 0) : stroops_(stroops) {}
 

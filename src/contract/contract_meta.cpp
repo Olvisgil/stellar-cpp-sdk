@@ -31,15 +31,13 @@ Result<xdr::SCVal> json_to_scval(const Json& j) {
     std::vector<xdr::SCMapEntry> entries;
     for (const auto& [k, v] : j.as_object()) {
       STELLAR_TRY_ASSIGN(auto kv, json_to_scval(v));
-      entries.push_back(xdr::SCMapEntry{
-          xdr::Box<xdr::SCVal>(scval::symbol(k)), xdr::Box<xdr::SCVal>(kv)});
+      entries.push_back(
+          xdr::SCMapEntry{xdr::Box<xdr::SCVal>(scval::symbol(k)), xdr::Box<xdr::SCVal>(kv)});
     }
     return scval::map(std::move(entries));
   }
   return Error::invalid_argument("null arg unsupported");
 }
-
-
 
 // WASM LEB128 decoder (unsigned)
 Result<std::uint64_t> leb(ByteSpan b, std::size_t* i) {
@@ -88,8 +86,7 @@ Result<ContractMeta> parse_contract_meta(ByteSpan wasm) {
       for (std::uint64_t k = 0; k < n && q < payload.size(); ++k) {
         STELLAR_TRY_ASSIGN(auto len2, leb(payload, &q));
         if (q + len2 <= payload.size()) {
-          out.env_meta.emplace_back(
-              reinterpret_cast<const char*>(payload.data() + q), len2);
+          out.env_meta.emplace_back(reinterpret_cast<const char*>(payload.data() + q), len2);
           q += len2;
         }
       }
@@ -106,8 +103,7 @@ Result<ContractMeta> parse_contract_meta(ByteSpan wasm) {
         q += kl;
         STELLAR_TRY_ASSIGN(auto vl, leb(payload, &q));
         if (q + vl > payload.size()) break;
-        out.kvs.emplace(key, std::string(
-            reinterpret_cast<const char*>(payload.data() + q), vl));
+        out.kvs.emplace(key, std::string(reinterpret_cast<const char*>(payload.data() + q), vl));
         q += vl;
       }
     }
@@ -117,8 +113,7 @@ Result<ContractMeta> parse_contract_meta(ByteSpan wasm) {
   return out;
 }
 
-Result<xdr::SCVal> scval_from_string(std::string_view spec_type,
-                                     std::string_view arg) {
+Result<xdr::SCVal> scval_from_string(std::string_view spec_type, std::string_view arg) {
   std::string t{spec_type};
   for (auto& c : t) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
   if (t.rfind("scv_", 0) == 0) t = t.substr(4);
@@ -134,8 +129,7 @@ Result<xdr::SCVal> scval_from_string(std::string_view spec_type,
       auto hb = hex_decode(arg.substr(2));
       if (!hb.ok()) return hb.error();
       Bytes buf(bytes_n, 0);
-      std::copy(hb->begin(),
-                hb->begin() + std::min(hb->size(), buf.size()),
+      std::copy(hb->begin(), hb->begin() + std::min(hb->size(), buf.size()),
                 buf.end() - static_cast<std::ptrdiff_t>(hb->size()));
       if (bytes_n == 16) {
         std::uint64_t hi{}, lo{};
@@ -194,11 +188,8 @@ Result<xdr::SCVal> scval_from_string(std::string_view spec_type,
     auto v = json_to_scval(*j);
     if (v.ok()) return v;
   }
-  return Error::invalid_argument("unsupported spec type: " +
-                                 std::string{spec_type});
+  return Error::invalid_argument("unsupported spec type: " + std::string{spec_type});
 }
-
-
 
 // ---------------------------------------------------------------------------
 // ContractSpec
@@ -229,9 +220,8 @@ Result<xdr::SCVal> udt_scval(std::string_view name, const Json& j,
         return Error::invalid_argument("missing struct field: " + fname);
       }
       STELLAR_TRY_ASSIGN(auto sv, arg_via_typedef(f.type, *val, udts));
-      fields.push_back(xdr::SCMapEntry{
-          xdr::Box<xdr::SCVal>(scval::symbol(fname)),
-          xdr::Box<xdr::SCVal>(sv)});
+      fields.push_back(
+          xdr::SCMapEntry{xdr::Box<xdr::SCVal>(scval::symbol(fname)), xdr::Box<xdr::SCVal>(sv)});
     }
     return scval::map(std::move(fields));
   }
@@ -254,10 +244,8 @@ Result<xdr::SCVal> udt_scval(std::string_view name, const Json& j,
       } else if (const auto* tuple = c.get_if_tupleCase()) {
         const std::string cname{tuple->name.begin(), tuple->name.end()};
         if (cname != variant) continue;
-        if (!payload.is_array() ||
-            payload.as_array().size() != tuple->type.size()) {
-          return Error::invalid_argument(
-              "union case " + cname + " expects a JSON array");
+        if (!payload.is_array() || payload.as_array().size() != tuple->type.size()) {
+          return Error::invalid_argument("union case " + cname + " expects a JSON array");
         }
         std::vector<xdr::SCVal> elems{scval::symbol(cname)};
         for (std::size_t i = 0; i < tuple->type.size(); ++i) {
@@ -273,8 +261,7 @@ Result<xdr::SCVal> udt_scval(std::string_view name, const Json& j,
     // enum -> u32 (name or number)
     for (const auto& c : en->cases) {
       const std::string cname{c.name.begin(), c.name.end()};
-      if ((j.is_string() && j.as_string() == cname) ||
-          (j.is_number() && j.as_int() == c.value)) {
+      if ((j.is_string() && j.as_string() == cname) || (j.is_number() && j.as_int() == c.value)) {
         return scval::u32(static_cast<std::uint32_t>(c.value));
       }
     }
@@ -283,15 +270,13 @@ Result<xdr::SCVal> udt_scval(std::string_view name, const Json& j,
   if (const auto* er = e.get_if_udtErrorEnumV0()) {
     for (const auto& c : er->cases) {
       const std::string cname{c.name.begin(), c.name.end()};
-      if ((j.is_string() && j.as_string() == cname) ||
-          (j.is_number() && j.as_int() == c.value)) {
+      if ((j.is_string() && j.as_string() == cname) || (j.is_number() && j.as_int() == c.value)) {
         xdr::SCError err;
         err = xdr::SCError::sceContract(c.value);
         return xdr::SCVal::scvError(err);
       }
     }
-    return Error::invalid_argument("unknown error enum case for " +
-                                   std::string{name});
+    return Error::invalid_argument("unknown error enum case for " + std::string{name});
   }
   return Error::invalid_argument("UDT " + std::string{name} + " is not a type entry");
 }
@@ -302,8 +287,7 @@ Result<xdr::SCVal> arg_via_typedef(const xdr::SCSpecTypeDef& type, const Json& j
     case xdr::SCSpecType::SC_SPEC_TYPE_VAL:
       return json_to_scval(j);
     case xdr::SCSpecType::SC_SPEC_TYPE_BOOL:
-      return j.is_bool() ? scval::bool_(j.as_bool())
-                         : scval::bool_(j.as_string() == "true");
+      return j.is_bool() ? scval::bool_(j.as_bool()) : scval::bool_(j.as_string() == "true");
     case xdr::SCSpecType::SC_SPEC_TYPE_U32:
       return scval::u32(static_cast<std::uint32_t>(j.as_int()));
     case xdr::SCSpecType::SC_SPEC_TYPE_I32:
@@ -316,8 +300,8 @@ Result<xdr::SCVal> arg_via_typedef(const xdr::SCSpecTypeDef& type, const Json& j
     case xdr::SCSpecType::SC_SPEC_TYPE_I128:
     case xdr::SCSpecType::SC_SPEC_TYPE_U256:
     case xdr::SCSpecType::SC_SPEC_TYPE_I256:
-      return scval_from_string(
-          xdr::enum_name(static_cast<xdr::SCSpecType>(type.type())), j.as_string());
+      return scval_from_string(xdr::enum_name(static_cast<xdr::SCSpecType>(type.type())),
+                               j.as_string());
     case xdr::SCSpecType::SC_SPEC_TYPE_STRING:
       return scval::string(j.as_string());
     case xdr::SCSpecType::SC_SPEC_TYPE_SYMBOL:
@@ -353,19 +337,18 @@ Result<xdr::SCVal> arg_via_typedef(const xdr::SCSpecTypeDef& type, const Json& j
       for (const auto& [k, v] : j.as_object()) {
         STELLAR_TRY_ASSIGN(auto kv, arg_via_typedef(type.map().get().keyType.get(), Json(k), udts));
         STELLAR_TRY_ASSIGN(auto vv, arg_via_typedef(type.map().get().valueType.get(), v, udts));
-        entries.push_back(xdr::SCMapEntry{xdr::Box<xdr::SCVal>(kv),
-                                          xdr::Box<xdr::SCVal>(vv)});
+        entries.push_back(xdr::SCMapEntry{xdr::Box<xdr::SCVal>(kv), xdr::Box<xdr::SCVal>(vv)});
       }
       return scval::map(std::move(entries));
     }
     case xdr::SCSpecType::SC_SPEC_TYPE_TUPLE: {
-      if (!j.is_array() ||
-          j.as_array().size() != type.tuple().get().valueTypes->size()) {
+      if (!j.is_array() || j.as_array().size() != type.tuple().get().valueTypes->size()) {
         return Error::invalid_argument("tuple expects a fixed-length array");
       }
       std::vector<xdr::SCVal> elems;
       for (std::size_t i = 0; i < type.tuple().get().valueTypes->size(); ++i) {
-        STELLAR_TRY_ASSIGN(auto sv, arg_via_typedef((*type.tuple().get().valueTypes)[i], j.as_array()[i], udts));
+        STELLAR_TRY_ASSIGN(
+            auto sv, arg_via_typedef((*type.tuple().get().valueTypes)[i], j.as_array()[i], udts));
         elems.push_back(std::move(sv));
       }
       return scval::vec(std::move(elems));
@@ -393,8 +376,7 @@ Result<ContractSpec> ContractSpec::decode(ByteSpan spec_xdr) {
     if (const auto* f = e.get_if_functionV0()) {
       out.functions_[std::string{f->name}] = *f;
     } else {
-      for (const char* kind : {"udtStructV0", "udtUnionV0", "udtEnumV0",
-                               "udtErrorEnumV0"}) {
+      for (const char* kind : {"udtStructV0", "udtUnionV0", "udtEnumV0", "udtErrorEnumV0"}) {
         (void)kind;
         break;  // handled below
       }
@@ -422,8 +404,8 @@ Result<xdr::SCVal> ContractSpec::arg_to_scval(const xdr::SCSpecTypeDef& type,
   return arg_via_typedef(type, arg, udts_);
 }
 
-Result<std::vector<xdr::SCVal>> ContractSpec::args_from_json(
-    std::string_view function_name, const Json& args) const {
+Result<std::vector<xdr::SCVal>> ContractSpec::args_from_json(std::string_view function_name,
+                                                             const Json& args) const {
   const auto* fn = function(function_name);
   if (!fn) {
     return Error::invalid_argument("unknown function: " + std::string{function_name});
@@ -442,8 +424,7 @@ Result<std::vector<xdr::SCVal>> ContractSpec::args_from_json(
     }
   } else if (args.is_array()) {
     if (args.as_array().size() != fn->inputs.size()) {
-      return Error::invalid_argument("arg count mismatch for " +
-                                     std::string{function_name});
+      return Error::invalid_argument("arg count mismatch for " + std::string{function_name});
     }
     for (std::size_t i = 0; i < fn->inputs.size(); ++i) {
       STELLAR_TRY_ASSIGN(auto v, arg_to_scval(fn->inputs[i].type, args.as_array()[i]));

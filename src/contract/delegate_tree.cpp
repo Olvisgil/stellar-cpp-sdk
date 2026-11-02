@@ -28,8 +28,7 @@ bool addr_eq(const xdr::SCAddress& a, const xdr::SCAddress& b) {
 
 // Recursively check: no address repeats within a sibling set and no node is
 // an ancestor of itself.
-Result<void> validate(const std::vector<DelegateNode>& level,
-                      const xdr::SCAddress* ancestor_addr,
+Result<void> validate(const std::vector<DelegateNode>& level, const xdr::SCAddress* ancestor_addr,
                       std::set<const xdr::SCAddress*> ancestors) {
   for (const auto& n : level) {
     for (const auto* a : ancestors) {
@@ -49,8 +48,8 @@ Result<void> validate(const std::vector<DelegateNode>& level,
   return {};
 }
 
-void flatten(const std::vector<DelegateNode>& level,
-             xdr::SorobanDelegateSignature* out, std::size_t idx) {
+void flatten(const std::vector<DelegateNode>& level, xdr::SorobanDelegateSignature* out,
+             std::size_t idx) {
   out[idx].address = level[idx].address;
   out[idx].signature = xdr::Box<xdr::SCVal>(level[idx].signature);
   auto& kids = *out[idx].nestedDelegates;
@@ -61,16 +60,15 @@ void flatten(const std::vector<DelegateNode>& level,
 
 }  // namespace
 
-Result<std::vector<xdr::SorobanDelegateSignature>>
-build_delegate_tree(std::vector<DelegateNode> roots) {
+Result<std::vector<xdr::SorobanDelegateSignature>> build_delegate_tree(
+    std::vector<DelegateNode> roots) {
   STELLAR_TRY(validate(roots, nullptr, {}));
   std::vector<xdr::SorobanDelegateSignature> out(roots.size());
   for (std::size_t i = 0; i < roots.size(); ++i) flatten(roots, &out[i], i);
   return out;
 }
 
-Result<xdr::SorobanDelegateSignature>
-to_delegate_signature(const DelegateNode& node) {
+Result<xdr::SorobanDelegateSignature> to_delegate_signature(const DelegateNode& node) {
   std::vector<DelegateNode> one{node};
   STELLAR_TRY_ASSIGN(auto v, build_delegate_tree(std::move(one)));
   return v[0];

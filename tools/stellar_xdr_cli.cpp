@@ -16,10 +16,10 @@
 #include <string>
 #include <string_view>
 
-using stellar::v1::ByteSpan;
-using stellar::v1::Bytes;
 using stellar::v1::base64_decode;
 using stellar::v1::base64_encode;
+using stellar::v1::Bytes;
+using stellar::v1::ByteSpan;
 using stellar::v1::hex_decode;
 using namespace stellar::v1::xdr;
 

@@ -28,11 +28,11 @@ TEST(Base64, RoundTripAndStrict) {
   EXPECT_EQ(base64_encode(Bytes{'f', 'o', 'o', 'b', 'a'}), "Zm9vYmE=");
   EXPECT_EQ(base64_encode(Bytes{'f', 'o', 'o', 'b', 'a', 'r'}), "Zm9vYmFy");
   EXPECT_EQ(*dec("Zm9vYmFy"), Bytes({'f', 'o', 'o', 'b', 'a', 'r'}));
-  EXPECT_FALSE(dec("Zg=").ok());          // bad length
-  EXPECT_FALSE(dec("Z===").ok());         // bad padding
-  EXPECT_FALSE(dec("Zm9v\n").ok());       // non-alphabet
-  EXPECT_FALSE(dec("Zh==").ok());         // non-zero unused bits
-  EXPECT_FALSE(dec("Zm=v").ok());         // '=' mid-string
+  EXPECT_FALSE(dec("Zg=").ok());     // bad length
+  EXPECT_FALSE(dec("Z===").ok());    // bad padding
+  EXPECT_FALSE(dec("Zm9v\n").ok());  // non-alphabet
+  EXPECT_FALSE(dec("Zh==").ok());    // non-zero unused bits
+  EXPECT_FALSE(dec("Zm=v").ok());    // '=' mid-string
 }
 
 TEST(Base32, RoundTripAndStrict) {
@@ -43,16 +43,16 @@ TEST(Base32, RoundTripAndStrict) {
   EXPECT_EQ(base32_encode_nopad(Bytes{'f', 'o', 'o', 'b', 'a'}), "MZXW6YTB");
   EXPECT_EQ(base32_encode_nopad(Bytes{'f', 'o', 'o', 'b', 'a', 'r'}), "MZXW6YTBOI");
   EXPECT_EQ(*base32_decode_nopad("MZXW6YTBOI"), Bytes({'f', 'o', 'o', 'b', 'a', 'r'}));
-  EXPECT_FALSE(base32_decode_nopad("M").ok());        // len %8 == 1
-  EXPECT_FALSE(base32_decode_nopad("MZX").ok());      // len %8 == 3
-  EXPECT_FALSE(base32_decode_nopad("MZXW6=").ok());   // padding char
-  EXPECT_FALSE(base32_decode_nopad("mzxw6ytboi").ok()); // lowercase non-canonical
-  EXPECT_FALSE(base32_decode_nopad("MZXW6YTBOJ").ok()); // nonzero unused bits
+  EXPECT_FALSE(base32_decode_nopad("M").ok());           // len %8 == 1
+  EXPECT_FALSE(base32_decode_nopad("MZX").ok());         // len %8 == 3
+  EXPECT_FALSE(base32_decode_nopad("MZXW6=").ok());      // padding char
+  EXPECT_FALSE(base32_decode_nopad("mzxw6ytboi").ok());  // lowercase non-canonical
+  EXPECT_FALSE(base32_decode_nopad("MZXW6YTBOJ").ok());  // nonzero unused bits
 }
 
 TEST(Crc16, KnownValue) {
   // CRC-16/XModem("123456789") = 0x31C3
-  EXPECT_EQ(crc16_xmodem(Bytes{'1','2','3','4','5','6','7','8','9'}), 0x31c3);
+  EXPECT_EQ(crc16_xmodem(Bytes{'1', '2', '3', '4', '5', '6', '7', '8', '9'}), 0x31c3);
 }
 
 TEST(ConstantTimeEqual, Basic) {

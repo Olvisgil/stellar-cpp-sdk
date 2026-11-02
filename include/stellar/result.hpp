@@ -91,7 +91,9 @@ class [[nodiscard]] Result {
   [[nodiscard]] const Error& error() const& { return std::get<Error>(data_); }
   [[nodiscard]] Error&& error() && { return std::move(std::get<Error>(data_)); }
 
-  [[nodiscard]] T value_or(T fallback) const& { return ok() ? std::get<T>(data_) : std::move(fallback); }
+  [[nodiscard]] T value_or(T fallback) const& {
+    return ok() ? std::get<T>(data_) : std::move(fallback);
+  }
   [[nodiscard]] T value_or(T fallback) && {
     return ok() ? std::move(std::get<T>(data_)) : std::move(fallback);
   }
@@ -164,7 +166,8 @@ class [[nodiscard]] Result<void> {
   Result(Error&& error) : error_(std::move(error)) {}
 
   template <typename T>
-  Result(const Result<T>& other) {  // NOLINT(google-explicit-constructor) - drops value, keeps error
+  Result(
+      const Result<T>& other) {  // NOLINT(google-explicit-constructor) - drops value, keeps error
     if (!other.ok()) error_ = other.error();
   }
 
@@ -197,19 +200,19 @@ class [[nodiscard]] Result<void> {
 ///
 ///   STELLAR_TRY_ASSIGN(const KeyPair kp, KeyPair::from_secret(seed));
 ///   STELLAR_TRY(rpc.send_and_wait(tx));
-#define STELLAR_TRY_ASSIGN(decl, expr)                                                    \
-  auto STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__) = (expr);                        \
-  if (!STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__).ok()) {                          \
-    return std::move(STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__)).error();          \
-  }                                                                                     \
+#define STELLAR_TRY_ASSIGN(decl, expr)                                           \
+  auto STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__) = (expr);               \
+  if (!STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__).ok()) {                 \
+    return std::move(STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__)).error(); \
+  }                                                                              \
   decl = std::move(STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__)).value()
 
-#define STELLAR_TRY(expr)                                                                 \
-  {                                                                                       \
-    auto STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__) = (expr);                        \
-    if (!STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__).ok()) {                          \
-      return std::move(STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__)).error();          \
-    }                                                                                     \
+#define STELLAR_TRY(expr)                                                          \
+  {                                                                                \
+    auto STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__) = (expr);               \
+    if (!STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__).ok()) {                 \
+      return std::move(STELLAR_DETAIL_CONCAT(_stellar_result_, __LINE__)).error(); \
+    }                                                                              \
   }
 
 }  // namespace stellar::inline v1

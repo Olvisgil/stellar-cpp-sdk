@@ -8,14 +8,14 @@
 /// builders, authorization signing, and invoke/simulate/assemble/deploy over
 /// the RPC client.
 
+#include "stellar/contract/contract_meta.hpp"
+#include "stellar/contract/delegate_tree.hpp"
 #include "stellar/core/address.hpp"
 #include "stellar/core/keypair.hpp"
 #include "stellar/core/network.hpp"
 #include "stellar/export.hpp"
 #include "stellar/result.hpp"
 #include "stellar/rpc/rpc_client.hpp"
-#include "stellar/contract/contract_meta.hpp"
-#include "stellar/contract/delegate_tree.hpp"
 #include "stellar/tx/transaction.hpp"
 #include "stellar/xdr/generated/stellar_contract.hpp"
 #include "stellar/xdr/generated/stellar_transaction.hpp"
@@ -66,9 +66,8 @@ struct STELLAR_API contract {
   /// type CONTRACT_FN with a KeyPair for `address` on `network`, replacing its
   /// credentials with the signature. For SOURCE_ACCOUNT entries no signature
   /// is needed — pass them through unchanged.
-  static Result<xdr::SorobanAuthorizationEntry>
-  sign_auth_entry(const xdr::SorobanAuthorizationEntry& entry, const Network& network,
-                  const KeyPair& kp);
+  static Result<xdr::SorobanAuthorizationEntry> sign_auth_entry(
+      const xdr::SorobanAuthorizationEntry& entry, const Network& network, const KeyPair& kp);
 };
 
 /// High-level client binding a `ContractID` to an RPC + network.
@@ -111,40 +110,36 @@ class STELLAR_API ContractClient {
 
   /// Spec-driven call: named args (JSON object) or positional (array) map to
   /// SCVals per the spec's declared input typedefs. Requires `set_spec`.
-  [[nodiscard]] Result<xdr::SCVal> call_json(const Address& source,
-                                             std::string_view function,
+  [[nodiscard]] Result<xdr::SCVal> call_json(const Address& source, std::string_view function,
                                              const Json& args);
   /// Spec-driven invoke (same conversion, then the full pipeline).
-  [[nodiscard]] Result<TransactionResponse>
-  invoke_json(const Address& source, std::int64_t sequence_number,
-              const Signer& signer, std::string_view function, const Json& args,
-              const InvokeOptions& opts = InvokeOptions::defaults());
+  [[nodiscard]] Result<TransactionResponse> invoke_json(
+      const Address& source, std::int64_t sequence_number, const Signer& signer,
+      std::string_view function, const Json& args,
+      const InvokeOptions& opts = InvokeOptions::defaults());
 
   /// The same pipeline on a raw HostFunction — needed for deploy ops
   /// (`upload_wasm_fn`, `create_contract_v2_fn`) and anything not covered by
   /// `invoke()`.
-  [[nodiscard]] Result<TransactionResponse>
-  invoke_host_function(const Address& source, std::int64_t sequence_number,
-                       const Signer& signer, const xdr::HostFunction& fn,
-                       const InvokeOptions& opts = InvokeOptions::defaults());
+  [[nodiscard]] Result<TransactionResponse> invoke_host_function(
+      const Address& source, std::int64_t sequence_number, const Signer& signer,
+      const xdr::HostFunction& fn, const InvokeOptions& opts = InvokeOptions::defaults());
 
   /// Full invoke: simulate → assemble (auth + resources + optional restore)
   /// → sign → send+poll (optionally fee-bumped). Returns the final status.
-  [[nodiscard]] Result<TransactionResponse>
-  invoke(const Address& source, std::int64_t sequence_number,
-         const Signer& signer, std::string_view function,
-         const std::vector<xdr::SCVal>& args,
-         const InvokeOptions& opts = InvokeOptions::defaults());
+  [[nodiscard]] Result<TransactionResponse> invoke(
+      const Address& source, std::int64_t sequence_number, const Signer& signer,
+      std::string_view function, const std::vector<xdr::SCVal>& args,
+      const InvokeOptions& opts = InvokeOptions::defaults());
 
   /// The signature preimage for an auth entry — exposed so signers external
   /// to `invoke` can produce signatures for address credentials.
-  [[nodiscard]] Result<Bytes>
-  auth_signature_payload(const xdr::SorobanAuthorizationEntry& entry);
+  [[nodiscard]] Result<Bytes> auth_signature_payload(const xdr::SorobanAuthorizationEntry& entry);
 
   /// Flatten the assembled authorization into a delegate tree view: one row
   /// per credential arm, children = delegates. Read-only.
-  [[nodiscard]] Result<std::vector<DelegateNode>>
-  invocation_tree(const std::vector<xdr::SorobanAuthorizationEntry>& auth) const;
+  [[nodiscard]] Result<std::vector<DelegateNode>> invocation_tree(
+      const std::vector<xdr::SorobanAuthorizationEntry>& auth) const;
 
  private:
   RpcClient& rpc_;

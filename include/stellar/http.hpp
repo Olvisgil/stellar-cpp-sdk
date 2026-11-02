@@ -14,8 +14,8 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
-#include <memory>
 #include <map>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -31,7 +31,7 @@ struct STELLAR_API HttpRequest {
 };
 
 struct STELLAR_API HttpResponse {
-  long status{0};               // HTTP status; 0 => transport-level failure
+  long status{0};  // HTTP status; 0 => transport-level failure
   std::string body;
   std::map<std::string, std::string> headers;
 };
@@ -51,8 +51,7 @@ class STELLAR_API CancelToken {
 class STELLAR_API StreamSink {
  public:
   virtual ~StreamSink() = default;
-  virtual void on_headers(long /*status*/,
-                          const std::map<std::string, std::string>& /*headers*/) {}
+  virtual void on_headers(long /*status*/, const std::map<std::string, std::string>& /*headers*/) {}
   [[nodiscard]] virtual bool on_data(const void* data, std::size_t size) = 0;
 };
 
@@ -129,10 +128,12 @@ class STELLAR_API MultipartEncoder {
   /// Add a text field.
   void add_field(std::string_view name, std::string_view value);
   /// Add a file part (binary or text) with a filename.
-  void add_file(std::string_view name, std::string_view filename,
-                ByteSpan content, std::string_view mime = "application/octet-stream");
+  void add_file(std::string_view name, std::string_view filename, ByteSpan content,
+                std::string_view mime = "application/octet-stream");
   /// Content-Type header value.
-  [[nodiscard]] std::string content_type() const { return "multipart/form-data; boundary=" + boundary_; }
+  [[nodiscard]] std::string content_type() const {
+    return "multipart/form-data; boundary=" + boundary_;
+  }
   /// Encoded body.
   [[nodiscard]] const std::string& body() const { return body_; }
 
@@ -144,10 +145,10 @@ class STELLAR_API MultipartEncoder {
 /// Server-sent events stream parser — Horizon/RPC streaming uses `data:`/
 /// `event:`/`id:`/`retry:` lines; yields one EventStreamFrame per blank line.
 struct STELLAR_API EventStreamFrame {
-  std::string event;    // "message" if unset
-  std::string data;     // accumulated `data:` payload
+  std::string event;  // "message" if unset
+  std::string data;   // accumulated `data:` payload
   std::string id;
-  std::string retry;    // ms
+  std::string retry;  // ms
 };
 
 /// Incremental SSE decoder: feed chunks, poll complete frames.
@@ -187,8 +188,7 @@ class STELLAR_API MockTransport final : public HttpTransport {
     for (const auto& [sub, res] : canned_) {
       if (request.url.find(sub) != std::string::npos) return res;
     }
-    return Error{ErrorCode::kNetwork,
-                 "MockTransport: no response registered for " + request.url};
+    return Error{ErrorCode::kNetwork, "MockTransport: no response registered for " + request.url};
   }
 
  private:

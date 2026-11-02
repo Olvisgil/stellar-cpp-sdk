@@ -4,11 +4,11 @@
 /// @file clock.hpp
 /// Injectable Clock/RandomSource/Logger — deterministic seams for tests and
 /// for logging that redacts secrets before they reach sink backends.
-#include "stellar/export.hpp"
-#include "stellar/util/bytes.hpp"
 #include <chrono>
 #include <string>
 #include <string_view>
+#include "stellar/export.hpp"
+#include "stellar/util/bytes.hpp"
 namespace stellar::inline v1 {
 
 /// Monotonic + wall clock. Inject into builders/clients that stamp
@@ -44,7 +44,10 @@ class STELLAR_API FakeClock final : public Clock {
   explicit FakeClock(std::int64_t now = 0) : now_(now) {}
   [[nodiscard]] std::int64_t now_seconds() const override { return now_; }
   [[nodiscard]] std::int64_t monotonic_seconds() const override { return mono_; }
-  void advance(std::int64_t s) { now_ += s; mono_ += s; }
+  void advance(std::int64_t s) {
+    now_ += s;
+    mono_ += s;
+  }
   void set_now(std::int64_t s) { now_ = s; }
 
  private:

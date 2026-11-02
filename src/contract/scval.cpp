@@ -47,8 +47,7 @@ xdr::SCVal scval::vec(std::vector<xdr::SCVal> items) {
 }
 xdr::SCVal scval::map(std::vector<xdr::SCMapEntry> entries) {
   // canonical order: keys sorted by scval_compare (the host rejects unsorted)
-  std::sort(entries.begin(), entries.end(), [](const xdr::SCMapEntry& a,
-                                               const xdr::SCMapEntry& b) {
+  std::sort(entries.begin(), entries.end(), [](const xdr::SCMapEntry& a, const xdr::SCMapEntry& b) {
     return scval_compare(a.key.get(), b.key.get()) < 0;
   });
   xdr::SCMap m;
@@ -74,11 +73,11 @@ const std::int32_t* scval_get::i32(const xdr::SCVal& v) {
 }
 const std::uint64_t* scval_get::u64(const xdr::SCVal& v) {
   return v.type() == xdr::SCValType::SCV_U64 ? reinterpret_cast<const std::uint64_t*>(&v.u64())
-                                           : nullptr;
+                                             : nullptr;
 }
 const std::int64_t* scval_get::i64(const xdr::SCVal& v) {
   return v.type() == xdr::SCValType::SCV_I64 ? reinterpret_cast<const std::int64_t*>(&v.i64())
-                                           : nullptr;
+                                             : nullptr;
 }
 const xdr::SCBytes* scval_get::bytes(const xdr::SCVal& v) {
   return v.type() == xdr::SCValType::SCV_BYTES ? &v.bytes() : nullptr;
@@ -137,15 +136,24 @@ int scval_compare(const xdr::SCVal& a, const xdr::SCVal& b) {
   const auto tb = b.type();
   if (ta != tb) return cmp3(static_cast<int>(ta), static_cast<int>(tb));
   switch (ta) {
-    case xdr::SCValType::SCV_BOOL: return cmp3(a.b(), b.b());
-    case xdr::SCValType::SCV_U32: return cmp3(a.u32(), b.u32());
-    case xdr::SCValType::SCV_I32: return cmp3(a.i32(), b.i32());
-    case xdr::SCValType::SCV_U64: return cmp3(a.u64(), b.u64());
-    case xdr::SCValType::SCV_I64: return cmp3(a.i64(), b.i64());
-    case xdr::SCValType::SCV_TIMEPOINT: return cmp3(a.timepoint(), b.timepoint());
-    case xdr::SCValType::SCV_DURATION: return cmp3(a.duration(), b.duration());
-    case xdr::SCValType::SCV_U128: return cmp_parts_u128(a.u128(), b.u128());
-    case xdr::SCValType::SCV_I128: return cmp_parts_i128(a.i128(), b.i128());
+    case xdr::SCValType::SCV_BOOL:
+      return cmp3(a.b(), b.b());
+    case xdr::SCValType::SCV_U32:
+      return cmp3(a.u32(), b.u32());
+    case xdr::SCValType::SCV_I32:
+      return cmp3(a.i32(), b.i32());
+    case xdr::SCValType::SCV_U64:
+      return cmp3(a.u64(), b.u64());
+    case xdr::SCValType::SCV_I64:
+      return cmp3(a.i64(), b.i64());
+    case xdr::SCValType::SCV_TIMEPOINT:
+      return cmp3(a.timepoint(), b.timepoint());
+    case xdr::SCValType::SCV_DURATION:
+      return cmp3(a.duration(), b.duration());
+    case xdr::SCValType::SCV_U128:
+      return cmp_parts_u128(a.u128(), b.u128());
+    case xdr::SCValType::SCV_I128:
+      return cmp_parts_i128(a.i128(), b.i128());
     case xdr::SCValType::SCV_U256: {
       if (int c = cmp3(a.u256().hi_hi, b.u256().hi_hi)) return c;
       if (int c = cmp3(a.u256().hi_lo, b.u256().hi_lo)) return c;
@@ -158,9 +166,12 @@ int scval_compare(const xdr::SCVal& a, const xdr::SCVal& b) {
       if (int c = cmp3(a.i256().lo_hi, b.i256().lo_hi)) return c;
       return cmp3(a.i256().lo_lo, b.i256().lo_lo);
     }
-    case xdr::SCValType::SCV_BYTES: return cmp_bytes(a.bytes(), b.bytes());
-    case xdr::SCValType::SCV_STRING: return cmp3(a.str(), b.str());
-    case xdr::SCValType::SCV_SYMBOL: return cmp3(a.sym(), b.sym());
+    case xdr::SCValType::SCV_BYTES:
+      return cmp_bytes(a.bytes(), b.bytes());
+    case xdr::SCValType::SCV_STRING:
+      return cmp3(a.str(), b.str());
+    case xdr::SCValType::SCV_SYMBOL:
+      return cmp3(a.sym(), b.sym());
     case xdr::SCValType::SCV_ADDRESS:
       // canonical: compare XDR encodings
       {
@@ -190,7 +201,8 @@ int scval_compare(const xdr::SCVal& a, const xdr::SCVal& b) {
       }
       return cmp3(ma->size(), mb->size());
     }
-    case xdr::SCValType::SCV_LEDGER_KEY_NONCE: return cmp3(a.nonce_key().nonce, b.nonce_key().nonce);
+    case xdr::SCValType::SCV_LEDGER_KEY_NONCE:
+      return cmp3(a.nonce_key().nonce, b.nonce_key().nonce);
     case xdr::SCValType::SCV_EXECUTABLE_TAG:
       return cmp3(a.executable_tag(), b.executable_tag());
     default:
@@ -198,22 +210,31 @@ int scval_compare(const xdr::SCVal& a, const xdr::SCVal& b) {
   }
 }
 
-bool scval_lt(const xdr::SCVal& a, const xdr::SCVal& b) { return scval_compare(a, b) < 0; }
+bool scval_lt(const xdr::SCVal& a, const xdr::SCVal& b) {
+  return scval_compare(a, b) < 0;
+}
 
 std::string scval_to_string(const xdr::SCVal& v) {
-  auto hexv = [](const auto& b) {
-    return "0x" + hex_encode(ByteSpan(b.data(), b.size()));
-  };
+  auto hexv = [](const auto& b) { return "0x" + hex_encode(ByteSpan(b.data(), b.size())); };
   switch (v.type()) {
-    case xdr::SCValType::SCV_BOOL: return v.b() ? "true" : "false";
-    case xdr::SCValType::SCV_VOID: return "void";
-    case xdr::SCValType::SCV_ERROR: return "error";
-    case xdr::SCValType::SCV_U32: return std::to_string(v.u32());
-    case xdr::SCValType::SCV_I32: return std::to_string(v.i32());
-    case xdr::SCValType::SCV_U64: return std::to_string(v.u64());
-    case xdr::SCValType::SCV_I64: return std::to_string(v.i64());
-    case xdr::SCValType::SCV_TIMEPOINT: return std::to_string(v.timepoint());
-    case xdr::SCValType::SCV_DURATION: return std::to_string(v.duration());
+    case xdr::SCValType::SCV_BOOL:
+      return v.b() ? "true" : "false";
+    case xdr::SCValType::SCV_VOID:
+      return "void";
+    case xdr::SCValType::SCV_ERROR:
+      return "error";
+    case xdr::SCValType::SCV_U32:
+      return std::to_string(v.u32());
+    case xdr::SCValType::SCV_I32:
+      return std::to_string(v.i32());
+    case xdr::SCValType::SCV_U64:
+      return std::to_string(v.u64());
+    case xdr::SCValType::SCV_I64:
+      return std::to_string(v.i64());
+    case xdr::SCValType::SCV_TIMEPOINT:
+      return std::to_string(v.timepoint());
+    case xdr::SCValType::SCV_DURATION:
+      return std::to_string(v.duration());
     case xdr::SCValType::SCV_U128: {
       const auto& p = v.u128();
       return std::to_string(static_cast<std::uint64_t>(p.hi)) + ":" +
@@ -232,9 +253,12 @@ std::string scval_to_string(const xdr::SCVal& v) {
       const auto& p = v.i256();
       return "0x" + hex_encode(ByteSpan(reinterpret_cast<const std::uint8_t*>(&p), 32));
     }
-    case xdr::SCValType::SCV_BYTES: return hexv(v.bytes());
-    case xdr::SCValType::SCV_STRING: return v.str();
-    case xdr::SCValType::SCV_SYMBOL: return v.sym();
+    case xdr::SCValType::SCV_BYTES:
+      return hexv(v.bytes());
+    case xdr::SCValType::SCV_STRING:
+      return v.str();
+    case xdr::SCValType::SCV_SYMBOL:
+      return v.sym();
     case xdr::SCValType::SCV_ADDRESS: {
       auto a = Address::from_sc_address(v.address());
       return a.ok() ? a->to_string() : "<address>";
@@ -263,11 +287,16 @@ std::string scval_to_string(const xdr::SCVal& v) {
       }
       return out + "}";
     }
-    case xdr::SCValType::SCV_CONTRACT_INSTANCE: return "<contract instance>";
-    case xdr::SCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE: return "contract instance key";
-    case xdr::SCValType::SCV_LEDGER_KEY_NONCE: return "<nonce key>";
-    case xdr::SCValType::SCV_EXECUTABLE_TAG: return "executable tag:" + std::string(v.executable_tag().begin(), v.executable_tag().end());
-    default: return "<unknown scval>";
+    case xdr::SCValType::SCV_CONTRACT_INSTANCE:
+      return "<contract instance>";
+    case xdr::SCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE:
+      return "contract instance key";
+    case xdr::SCValType::SCV_LEDGER_KEY_NONCE:
+      return "<nonce key>";
+    case xdr::SCValType::SCV_EXECUTABLE_TAG:
+      return "executable tag:" + std::string(v.executable_tag().begin(), v.executable_tag().end());
+    default:
+      return "<unknown scval>";
   }
 }
 

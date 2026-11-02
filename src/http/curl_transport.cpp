@@ -32,7 +32,9 @@ size_t header_cb(char* ptr, size_t size, size_t nmemb, void* ud) {
 
 }  // namespace
 
-CurlTransport::CurlTransport() { curl_global_init(CURL_GLOBAL_DEFAULT); }
+CurlTransport::CurlTransport() {
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+}
 CurlTransport::~CurlTransport() = default;  // global cleanup left to process exit
 
 Result<HttpResponse> CurlTransport::perform(const HttpRequest& request) {
@@ -57,8 +59,7 @@ Result<HttpResponse> CurlTransport::perform(const HttpRequest& request) {
   if (request.method == "POST") {
     curl_easy_setopt(c, CURLOPT_POST, 1L);
     curl_easy_setopt(c, CURLOPT_POSTFIELDS, request.body.data());
-    curl_easy_setopt(c, CURLOPT_POSTFIELDSIZE_LARGE,
-                     static_cast<curl_off_t>(request.body.size()));
+    curl_easy_setopt(c, CURLOPT_POSTFIELDSIZE_LARGE, static_cast<curl_off_t>(request.body.size()));
   } else if (request.method != "GET") {
     curl_easy_setopt(c, CURLOPT_CUSTOMREQUEST, request.method.c_str());
     if (!request.body.empty()) {
@@ -96,29 +97,32 @@ Result<long> CurlTransport::stream(const HttpRequest& request, StreamSink& sink,
   curl_easy_setopt(c, CURLOPT_SSL_VERIFYPEER, tls_verify_ ? 1L : 0L);
   curl_easy_setopt(c, CURLOPT_SSL_VERIFYHOST, tls_verify_ ? 2L : 0L);
   struct curl_slist* hdrs = nullptr;
-  for (const auto& [k, v] : request.headers)
-    hdrs = curl_slist_append(hdrs, (k + ": " + v).c_str());
+  for (const auto& [k, v] : request.headers) hdrs = curl_slist_append(hdrs, (k + ": " + v).c_str());
   if (hdrs) curl_easy_setopt(c, CURLOPT_HTTPHEADER, hdrs);
   if (request.method == "POST") {
     curl_easy_setopt(c, CURLOPT_POST, 1L);
     curl_easy_setopt(c, CURLOPT_POSTFIELDS, request.body.data());
-    curl_easy_setopt(c, CURLOPT_POSTFIELDSIZE_LARGE,
-                     static_cast<curl_off_t>(request.body.size()));
+    curl_easy_setopt(c, CURLOPT_POSTFIELDSIZE_LARGE, static_cast<curl_off_t>(request.body.size()));
   }
-  struct Ctx { StreamSink* sink; CancelToken* cancel; bool abort{false}; std::map<std::string,std::string> headers; };
+  struct Ctx {
+    StreamSink* sink;
+    CancelToken* cancel;
+    bool abort{false};
+    std::map<std::string, std::string> headers;
+  };
   Ctx ctx{&sink, cancel, false, {}};
   curl_easy_setopt(c, CURLOPT_WRITEDATA, &ctx);
-  curl_easy_setopt(c, CURLOPT_WRITEFUNCTION,
-                   +[](char* p, std::size_t sz, std::size_t nm, void* ud) -> std::size_t {
-                     auto* x = static_cast<Ctx*>(ud);
-                     const std::size_t n = sz * nm;
-                     if ((x->cancel && x->cancel->cancelled()) ||
-                         !x->sink->on_data(p, n)) {
-                       x->abort = true;
-                       return 0;
-                     }
-                     return n;
-                   });
+  curl_easy_setopt(
+      c, CURLOPT_WRITEFUNCTION,
+      +[](char* p, std::size_t sz, std::size_t nm, void* ud) -> std::size_t {
+        auto* x = static_cast<Ctx*>(ud);
+        const std::size_t n = sz * nm;
+        if ((x->cancel && x->cancel->cancelled()) || !x->sink->on_data(p, n)) {
+          x->abort = true;
+          return 0;
+        }
+        return n;
+      });
   std::map<std::string, std::string> h;
   curl_easy_setopt(c, CURLOPT_HEADERDATA, &h);
   curl_easy_setopt(c, CURLOPT_HEADERFUNCTION, header_cb);
@@ -129,8 +133,7 @@ Result<long> CurlTransport::stream(const HttpRequest& request, StreamSink& sink,
   curl_easy_cleanup(c);
   if (ctx.abort) return Error{ErrorCode::kInvalidArgument, "stream aborted"};
   if (rc != CURLE_OK) {
-    return Error{ErrorCode::kNetwork,
-                 std::string("HTTP stream failed: ") + curl_easy_strerror(rc)};
+    return Error{ErrorCode::kNetwork, std::string("HTTP stream failed: ") + curl_easy_strerror(rc)};
   }
   sink.on_headers(status, h);
   return status;

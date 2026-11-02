@@ -62,7 +62,8 @@ Result<Price> Price::parse(std::string_view text) {
       return true;
     };
     std::int64_t n = 0, d = 0;
-    if (!parse_int(text.substr(0, slash), &n) || !parse_int(text.substr(slash + 1), &d) || d == 0 || n < 0) {
+    if (!parse_int(text.substr(0, slash), &n) || !parse_int(text.substr(slash + 1), &d) || d == 0 ||
+        n < 0) {
       return Error::invalid_argument("price: expected 'N/D' with positive D");
     }
     // reduce

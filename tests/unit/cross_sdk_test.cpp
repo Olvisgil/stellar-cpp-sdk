@@ -59,20 +59,19 @@ Result<xdr::Operation> build_op(const std::string& name, const Address& src) {
     return ops::payment(src, Asset::native(), *Amount::parse("12.3456789"));
   if (name == "payment_1xlm") return ops::payment(src, Asset::native(), *Amount::parse("1"));
   if (name == "payment_usd") return ops::payment(src, usd(), *Amount::parse("0.0000001"));
-  if (name == "create_account")
-    return ops::create_account(src, *Amount::parse("1.5"));
+  if (name == "create_account") return ops::create_account(src, *Amount::parse("1.5"));
   if (name == "path_payment_strict_receive")
-    return ops::path_payment_strict_receive(usd(), *Amount::parse("10"), src,
-                                            Asset::native(), *Amount::parse("5"), {eur()});
+    return ops::path_payment_strict_receive(usd(), *Amount::parse("10"), src, Asset::native(),
+                                            *Amount::parse("5"), {eur()});
   if (name == "path_payment_strict_send")
-    return ops::path_payment_strict_send(Asset::native(), *Amount::parse("10"), src,
-                                         usd(), *Amount::parse("5"), {eur(), usd()});
+    return ops::path_payment_strict_send(Asset::native(), *Amount::parse("10"), src, usd(),
+                                         *Amount::parse("5"), {eur(), usd()});
   if (name == "manage_sell_offer")
     return ops::manage_sell_offer(usd(), Asset::native(), *Amount::parse("7.5"),
                                   *Price::parse("2.5"));
   if (name == "manage_sell_offer_delete")
-    return ops::manage_sell_offer(usd(), Asset::native(), *Amount::parse("0"),
-                                  *Price::parse("2.5"), 42);
+    return ops::manage_sell_offer(usd(), Asset::native(), *Amount::parse("0"), *Price::parse("2.5"),
+                                  42);
   if (name == "manage_buy_offer")
     return ops::manage_buy_offer(Asset::native(), usd(), *Amount::parse("7.5"),
                                  *Price::parse("0.4"));
@@ -121,8 +120,7 @@ Result<xdr::Operation> build_op(const std::string& name, const Address& src) {
     auto hb = hex_decode("deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef");
     xdr::Hash h{};
     std::copy(hb->begin(), hb->end(), h.begin());
-    return ops::clawback_claimable_balance(
-        xdr::ClaimableBalanceID::claimableBalanceIdTypeV0(h));
+    return ops::clawback_claimable_balance(xdr::ClaimableBalanceID::claimableBalanceIdTypeV0(h));
   }
   if (name == "begin_sponsoring") return ops::begin_sponsoring_future_reserves(src);
   if (name == "end_sponsoring") return ops::end_sponsoring_future_reserves(&src);
@@ -134,8 +132,8 @@ Result<xdr::Operation> build_op(const std::string& name, const Address& src) {
       pk = mx->med25519().ed25519;
     else
       pk = mx->ed25519();
-    return ops::revoke_sponsorship_ledger_entry(xdr::LedgerKey::account(
-        xdr::LedgerKeyAccount{xdr::PublicKey::publicKeyTypeEd25519(pk)}));
+    return ops::revoke_sponsorship_ledger_entry(
+        xdr::LedgerKey::account(xdr::LedgerKeyAccount{xdr::PublicKey::publicKeyTypeEd25519(pk)}));
   }
   if (name == "lp_deposit") {
     auto pool = Asset::liquidity_pool_id(eur(), usd());
@@ -155,17 +153,17 @@ Result<xdr::Operation> build_op(const std::string& name, const Address& src) {
 // Build the same envelope the JS generator produced for `name`.
 Result<TransactionEnvelope> build_envelope(const std::string& name, const Address& src) {
   auto b = base();
-  if (name == "memo_text") b.memo(Memo::text("hello world"));
-  else if (name == "memo_id") b.memo(Memo::id(999999999999));
+  if (name == "memo_text")
+    b.memo(Memo::text("hello world"));
+  else if (name == "memo_id")
+    b.memo(Memo::id(999999999999));
   else if (name == "memo_hash" || name == "memo_return") {
     std::array<std::uint8_t, 32> h{};
     h.fill(0xde);
     b.memo(name == "memo_hash" ? Memo::hash(h) : Memo::return_(h));
   } else if (name == "precond_v2") {
-    b.ledger_bounds(500, 900)
-        .min_sequence_age(3600)
-        .min_sequence_ledger_gap(5)
-        .min_sequence_number(1234567890123456789LL);
+    b.ledger_bounds(500, 900).min_sequence_age(3600).min_sequence_ledger_gap(5).min_sequence_number(
+        1234567890123456789LL);
     xdr::Hash sh{};
     for (auto& b8 : sh) b8 = 7;
     b.extra_signer(xdr::SignerKey::signerKeyTypeHashX(sh));

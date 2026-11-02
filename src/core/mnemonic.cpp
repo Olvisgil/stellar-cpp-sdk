@@ -48,7 +48,7 @@ static std::array<std::uint8_t, 64> hmac_sha512(ByteSpan key, ByteSpan msg) {
 
 // PBKDF2-HMAC-SHA512: T1 alone covers dkLen=64 (hLen=64).
 static std::array<std::uint8_t, 64> pbkdf2_sha512(ByteSpan password, ByteSpan salt,
-                                                std::uint32_t iters) {
+                                                  std::uint32_t iters) {
   std::vector<std::uint8_t> salt_i(salt.begin(), salt.end());
   salt_i.insert(salt_i.end(), {0, 0, 0, 1});
 
@@ -63,7 +63,7 @@ static std::array<std::uint8_t, 64> pbkdf2_sha512(ByteSpan password, ByteSpan sa
 }
 
 Result<std::array<std::uint8_t, 64>> mnemonic_to_seed(std::string_view phrase,
-                                                    std::string_view passphrase) {
+                                                      std::string_view passphrase) {
   STELLAR_TRY(validate_mnemonic(phrase));
   const std::string salt = "mnemonic" + std::string(passphrase);
   return pbkdf2_sha512(

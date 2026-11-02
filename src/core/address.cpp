@@ -70,8 +70,7 @@ Result<xdr::SCAddress> Address::to_sc_address() const {
   const xdr::uint256 h{id_};
   switch (kind_) {
     case Kind::kAccount:
-      return xdr::SCAddress::scAddressTypeAccount(
-          xdr::PublicKey::publicKeyTypeEd25519(h));
+      return xdr::SCAddress::scAddressTypeAccount(xdr::PublicKey::publicKeyTypeEd25519(h));
     case Kind::kContract:
       return xdr::SCAddress::scAddressTypeContract(xdr::ContractID{h});
     case Kind::kMuxedAccount:
@@ -79,8 +78,7 @@ Result<xdr::SCAddress> Address::to_sc_address() const {
           xdr::MuxedEd25519Account{static_cast<xdr::uint64>(sub_id_.value_or(0)), h});
     case Kind::kMuxedContract:
       return xdr::SCAddress::scAddressTypeMuxedContract(
-          xdr::MuxedContract{static_cast<xdr::uint64>(sub_id_.value_or(0)),
-                             xdr::ContractID{h}});
+          xdr::MuxedContract{static_cast<xdr::uint64>(sub_id_.value_or(0)), xdr::ContractID{h}});
   }
   return Error::internal("address kind");
 }
@@ -138,6 +136,8 @@ const std::array<std::uint8_t, 32>* Address::account_id_bytes() const {
   return nullptr;
 }
 
-std::optional<std::uint64_t> Address::muxed_id() const { return sub_id_; }
+std::optional<std::uint64_t> Address::muxed_id() const {
+  return sub_id_;
+}
 
 }  // namespace stellar::inline v1

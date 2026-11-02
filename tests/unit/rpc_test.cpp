@@ -32,8 +32,8 @@ TEST(Json, ParseRoundTrip) {
 }
 
 TEST(Json, RejectsBad) {
-  for (const char* s : {"{", "[1,]", "{\"a\":1,}", "\"\\x\"", "01", "nul",
-                        "{\"a\":1,\"a\":2}", "[1 2]", "{\"a\"}"}) {
+  for (const char* s : {"{", "[1,]", "{\"a\":1,}", "\"\\x\"", "01", "nul", "{\"a\":1,\"a\":2}",
+                        "[1 2]", "{\"a\"}"}) {
     EXPECT_FALSE(Json::parse(s).ok()) << "accepted " << s;
   }
 }
@@ -127,8 +127,9 @@ TEST(Rpc, TransactionParsing) {
   ASSERT_TRUE(txr_bytes.ok());
   const std::string result_b64 = base64_encode(*txr_bytes);
 
-  const std::string body = std::string(
-      R"({"jsonrpc":"2.0","id":1,"result":{"status":"SUCCESS","ledger":5509236,"applicationOrder":1,)") +
+  const std::string body =
+      std::string(
+          R"({"jsonrpc":"2.0","id":1,"result":{"status":"SUCCESS","ledger":5509236,"applicationOrder":1,)") +
       "\"txHash\":\"9d4c3558efd4\",\"envelopeXdr\":\"" + env_b64 + "\",\"resultXdr\":\"" +
       result_b64 + "\"}}";
   ScriptMockTransport mt;
@@ -231,7 +232,9 @@ TEST(Http, MockTransportPublic) {
   MockTransport mt;
   mt.add_response("/health", {200, R"({"ok":1})", {}});
   mt.add_error("/fail", Error::invalid_argument("no route"));
-  HttpRequest req; req.url = "https://x/health"; req.method = "GET";
+  HttpRequest req;
+  req.url = "https://x/health";
+  req.method = "GET";
   auto r = mt.perform(req);
   ASSERT_TRUE(r.ok() && r->status == 200);
   req.url = "https://x/fail";

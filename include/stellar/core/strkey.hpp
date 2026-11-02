@@ -21,16 +21,16 @@ namespace stellar::inline v1 {
 
 /// Strkey payload kinds and their SEP-23 version bytes.
 enum class StrKeyKind : std::uint8_t {
-  kAccount = 6 << 3,          // G - ed25519 public key
-  kMuxedAccount = 12 << 3,    // M - muxed ed25519 account
-  kSeed = 18 << 3,            // S - ed25519 secret seed
-  kPreAuthTx = 19 << 3,       // T - pre-authorized tx hash
-  kHashX = 23 << 3,           // X - sha256 hash signer
-  kSignedPayload = 15 << 3,   // P - ed25519 signed payload
-  kContract = 2 << 3,         // C - contract id
-  kLiquidityPool = 11 << 3,   // L - liquidity pool id
-  kClaimableBalance = 1 << 3, // B - claimable balance id
-  kMuxedContract = 22 << 3,   // W - muxed contract
+  kAccount = 6 << 3,           // G - ed25519 public key
+  kMuxedAccount = 12 << 3,     // M - muxed ed25519 account
+  kSeed = 18 << 3,             // S - ed25519 secret seed
+  kPreAuthTx = 19 << 3,        // T - pre-authorized tx hash
+  kHashX = 23 << 3,            // X - sha256 hash signer
+  kSignedPayload = 15 << 3,    // P - ed25519 signed payload
+  kContract = 2 << 3,          // C - contract id
+  kLiquidityPool = 11 << 3,    // L - liquidity pool id
+  kClaimableBalance = 1 << 3,  // B - claimable balance id
+  kMuxedContract = 22 << 3,    // W - muxed contract
 };
 
 /// A decoded strkey: kind + raw payload bytes (version/checksum stripped).
@@ -44,8 +44,8 @@ class STELLAR_API StrKey {
   };
 
   using Payload = std::variant<std::array<std::uint8_t, 32>,  // fixed 32
-                               Muxed,                        // 40 bytes (M, W)
-                               Bytes>;                       // signed payload 64-96 (P)
+                               Muxed,                         // 40 bytes (M, W)
+                               Bytes>;                        // signed payload 64-96 (P)
 
   StrKey() = default;
   StrKey(StrKeyKind kind, Payload payload) : kind_(kind), payload_(std::move(payload)) {}

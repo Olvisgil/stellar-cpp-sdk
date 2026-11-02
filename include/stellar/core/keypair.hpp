@@ -51,14 +51,13 @@ class STELLAR_API KeyPair {
   /// Public-only keypair from a `G...` account strkey.
   static Result<KeyPair> from_account_id(std::string_view account);
 
-  [[nodiscard]] std::string account_id() const;       // G...
+  [[nodiscard]] std::string account_id() const;  // G...
   [[nodiscard]] const std::array<std::uint8_t, 32>& public_key() const noexcept { return public_; }
   [[nodiscard]] bool can_sign() const noexcept { return !secret_.empty(); }
 
   /// Ed25519 sign; fails if this is a public-only keypair.
   [[nodiscard]] Result<std::array<std::uint8_t, 64>> sign(ByteSpan message) const;
-  [[nodiscard]] static bool verify(const std::array<std::uint8_t, 32>& public_key,
-                                   ByteSpan message,
+  [[nodiscard]] static bool verify(const std::array<std::uint8_t, 32>& public_key, ByteSpan message,
                                    ByteSpan signature) noexcept;
 
   /// XDR signature hint: last 4 bytes of the public key.
@@ -85,8 +84,12 @@ class STELLAR_API Signer {
 class STELLAR_API KeyPairSigner final : public Signer {
  public:
   explicit KeyPairSigner(KeyPair kp) : kp_(std::move(kp)) {}
-  [[nodiscard]] std::array<std::uint8_t, 4> signature_hint() const override { return kp_.signature_hint(); }
-  [[nodiscard]] Result<std::array<std::uint8_t, 64>> sign(ByteSpan m) const override { return kp_.sign(m); }
+  [[nodiscard]] std::array<std::uint8_t, 4> signature_hint() const override {
+    return kp_.signature_hint();
+  }
+  [[nodiscard]] Result<std::array<std::uint8_t, 64>> sign(ByteSpan m) const override {
+    return kp_.sign(m);
+  }
   [[nodiscard]] std::string account_id() const override { return kp_.account_id(); }
   [[nodiscard]] const KeyPair& keypair() const noexcept { return kp_; }
 

@@ -47,8 +47,7 @@ TEST(Tx, BuildSignRoundTrip) {
   auto base = env.signature_base(Network::testnet());
   ASSERT_TRUE(base.ok());
   const auto& ds = env.signatures().front();
-  EXPECT_EQ(std::vector(ds.hint.begin(), ds.hint.end()),
-            std::vector(hint.begin(), hint.end()));
+  EXPECT_EQ(std::vector(ds.hint.begin(), ds.hint.end()), std::vector(hint.begin(), hint.end()));
   EXPECT_TRUE(KeyPair::verify(pub, *base, ds.signature));
 
   // tx hash == signature base for v1
@@ -132,7 +131,10 @@ TEST(Tx, V0EnvelopeSignsLikeConvertedV1) {
   auto src = Address::parse(kp->account_id());
   ASSERT_TRUE(src.ok());
   TransactionBuilder b(*src);
-  b.sequence_number(5).fee(100).memo(Memo::id(7)).time_bounds(10, 20)
+  b.sequence_number(5)
+      .fee(100)
+      .memo(Memo::id(7))
+      .time_bounds(10, 20)
       .add_operation(ops::inflation());
   auto tx = b.build();
   ASSERT_TRUE(tx.ok());
@@ -171,7 +173,10 @@ TEST(Tx, ExtraSignerLimitReported) {
   auto src = addr(kA);
   xdr::SignerKey k = xdr::SignerKey::signerKeyTypeEd25519(xdr::uint256{});
   TransactionBuilder b(src);
-  b.sequence_number(1).fee(100).no_timeout().add_operation(ops::inflation())
+  b.sequence_number(1)
+      .fee(100)
+      .no_timeout()
+      .add_operation(ops::inflation())
       .extra_signer(k)
       .extra_signer(k)
       .extra_signer(k);  // third exceeds protocol max 2
@@ -179,7 +184,10 @@ TEST(Tx, ExtraSignerLimitReported) {
   EXPECT_FALSE(tx.ok());
   // two is fine
   TransactionBuilder b2(src);
-  b2.sequence_number(1).fee(100).no_timeout().add_operation(ops::inflation())
+  b2.sequence_number(1)
+      .fee(100)
+      .no_timeout()
+      .add_operation(ops::inflation())
       .extra_signer(k)
       .extra_signer(k);
   auto tx2 = b2.build();
@@ -212,7 +220,8 @@ TEST(Tx, OperationsCoverKinds) {
       ops::manage_data("key", Bytes{1, 2, 3}),
       ops::clawback(*usd, addr(kB), *Amount::parse("1")),
       ops::begin_sponsoring_future_reserves(addr(kB)),
-      ops::revoke_sponsorship_signer(addr(kB), xdr::SignerKey::signerKeyTypeEd25519(xdr::uint256{})),
+      ops::revoke_sponsorship_signer(addr(kB),
+                                     xdr::SignerKey::signerKeyTypeEd25519(xdr::uint256{})),
   };
   int ok = 0;
   for (const auto& c : cases) ok += c.ok() ? 1 : 0;
@@ -225,8 +234,8 @@ TEST(Tx, OperationsCoverKinds) {
   auto op1 = ops::inflation();
   auto op2 = ops::bump_sequence(99);
   auto op3 = ops::end_sponsoring_future_reserves();
-  auto op4 = ops::claim_claimable_balance(
-      xdr::ClaimableBalanceID::claimableBalanceIdTypeV0(xdr::Hash{}));
+  auto op4 =
+      ops::claim_claimable_balance(xdr::ClaimableBalanceID::claimableBalanceIdTypeV0(xdr::Hash{}));
   auto op5 = ops::clawback_claimable_balance(
       xdr::ClaimableBalanceID::claimableBalanceIdTypeV0(xdr::Hash{}));
   auto op6 = ops::liquidity_pool_deposit(pool, *Amount::parse("1"), *Amount::parse("2"), p, p);
@@ -287,15 +296,16 @@ TEST(Tx, SignedPayloadSignature) {
   auto kb = xdr::encode(*key);
   ASSERT_TRUE(kb.ok());
   const auto n = kb->size();
-  EXPECT_EQ(d->hint, (xdr::SignatureHint{{(*kb)[n-4], (*kb)[n-3], (*kb)[n-2], (*kb)[n-1]}}));
+  EXPECT_EQ(d->hint,
+            (xdr::SignatureHint{{(*kb)[n - 4], (*kb)[n - 3], (*kb)[n - 2], (*kb)[n - 1]}}));
   // signature verifies over payload ++ message
   Bytes data(payload.begin(), payload.end());
   data.insert(data.end(), message.begin(), message.end());
-  EXPECT_TRUE(KeyPair::verify(kp->public_key(), ByteSpan(data.data(), data.size()),
-                              d->signature));
+  EXPECT_TRUE(KeyPair::verify(kp->public_key(), ByteSpan(data.data(), data.size()), d->signature));
 
   EXPECT_FALSE(SignatureHelpers::signed_payload_signer_key(*src, {}).ok());
-  EXPECT_FALSE(SignatureHelpers::signed_payload_signer_key(*src, ByteSpan(Bytes(65).data(), 65)).ok());
+  EXPECT_FALSE(
+      SignatureHelpers::signed_payload_signer_key(*src, ByteSpan(Bytes(65).data(), 65)).ok());
 }
 
 // ---------------------------------------------------------------------------
@@ -303,7 +313,10 @@ TEST(Tx, SignedPayloadSignature) {
 // ---------------------------------------------------------------------------
 
 TEST(Price, JSSDKVectors) {
-  struct V { const char* in; std::int64_t n, d; };
+  struct V {
+    const char* in;
+    std::int64_t n, d;
+  };
   // from stellar-base best_r test vectors
   for (const auto& v : std::vector<V>{
            {"1", 1, 1},

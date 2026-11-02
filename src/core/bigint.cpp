@@ -95,8 +95,8 @@ std::array<std::uint8_t, N> mul(const std::array<std::uint8_t, N>& a,
 }
 /// Divide a LE value by a u32; returns quotient and leaves remainder.
 template <std::size_t N>
-std::array<std::uint8_t, N> divmod(const std::array<std::uint8_t, N>& a,
-                                   std::uint32_t d, std::uint32_t& rem) {
+std::array<std::uint8_t, N> divmod(const std::array<std::uint8_t, N>& a, std::uint32_t d,
+                                   std::uint32_t& rem) {
   std::array<std::uint8_t, N> q{};
   std::uint64_t r = 0;
   for (std::size_t i = N; i-- > 0;) {
@@ -179,8 +179,7 @@ Result<BigInt<N, Signed>> BigInt<N, Signed>::from_decimal(std::string_view dec) 
     neg = true;
     dec.remove_prefix(1);
   }
-  if (dec.empty() ||
-      dec.find_first_not_of("0123456789") != std::string_view::npos) {
+  if (dec.empty() || dec.find_first_not_of("0123456789") != std::string_view::npos) {
     return Error::invalid_argument("not a decimal number");
   }
   std::array<std::uint8_t, N> acc{};

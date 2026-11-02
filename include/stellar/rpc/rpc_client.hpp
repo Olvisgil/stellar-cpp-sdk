@@ -58,7 +58,7 @@ struct STELLAR_API LedgersResponse {
 };
 
 struct STELLAR_API EventRow {
-  std::string type;             // contract | system | diagnostic
+  std::string type;  // contract | system | diagnostic
   std::uint32_t ledger{0};
   std::string ledger_closed_at;
   std::string contract_id;
@@ -102,7 +102,7 @@ struct STELLAR_API SimulateTransactionResponse {
   /// Per-invoke-host-function return values (decoded SCVals from results[].xdr).
   std::vector<xdr::SCVal> results;
   std::vector<xdr::SorobanAuthorizationEntry> auth;
-  std::vector<std::string> events_xdr;     // diagnostic events (raw xdr b64)
+  std::vector<std::string> events_xdr;  // diagnostic events (raw xdr b64)
 
   /// populate when simulation says state needs restoring
   struct RestorePreamble {
@@ -141,11 +141,11 @@ class STELLAR_API RpcClient {
   [[nodiscard]] Result<FeeStats> get_fee_stats();
   [[nodiscard]] Result<Json> get_network();
 
-  [[nodiscard]] Result<LedgerEntriesResponse>
-  get_ledger_entries(const std::vector<xdr::LedgerKey>& keys);
+  [[nodiscard]] Result<LedgerEntriesResponse> get_ledger_entries(
+      const std::vector<xdr::LedgerKey>& keys);
 
-  [[nodiscard]] Result<LedgersResponse>
-  get_ledgers(std::uint32_t start_sequence, std::uint32_t limit = 10);
+  [[nodiscard]] Result<LedgersResponse> get_ledgers(std::uint32_t start_sequence,
+                                                    std::uint32_t limit = 10);
 
   /// One event filter spec — RPC accepts several in a single call.
   struct STELLAR_API EventsFilter {
@@ -175,13 +175,13 @@ class STELLAR_API RpcClient {
   /// Options for simulateTransaction.
   struct SimulateOptions {
     std::optional<std::uint32_t> instruction_leeway;
-    std::optional<std::string> auth_mode;      // "enforce" | "record" | "record_allow_nonroot"
+    std::optional<std::string> auth_mode;  // "enforce" | "record" | "record_allow_nonroot"
     bool use_upgraded_auth = false;
-    bool xdr_format_json = false;              // server returns xdrFormat=json
+    bool xdr_format_json = false;  // server returns xdrFormat=json
   };
   /// Simulate with options. `envelope` may carry signatures or not.
-  [[nodiscard]] Result<SimulateTransactionResponse> simulate(
-      const TransactionEnvelope& envelope, const SimulateOptions& opts);
+  [[nodiscard]] Result<SimulateTransactionResponse> simulate(const TransactionEnvelope& envelope,
+                                                             const SimulateOptions& opts);
 
   /// Batch getTransactions — one RPC call per chunk of 50 hashes.
   [[nodiscard]] Result<std::vector<TransactionResponse>> get_transactions(
@@ -198,19 +198,18 @@ class STELLAR_API RpcClient {
 
   /// Contract data lookup: resolves (contractId, SCVal key) -> LedgerEntryData
   /// of the contractData entry (must be CONTRACT_DATA arm).
-  [[nodiscard]] Result<xdr::LedgerEntryData> get_contract_data(
-      std::string_view contract_strkey, const xdr::SCVal& key);
+  [[nodiscard]] Result<xdr::LedgerEntryData> get_contract_data(std::string_view contract_strkey,
+                                                               const xdr::SCVal& key);
 
   /// Contract WASM code: contractId -> wasm-hash ledger key -> wasm bytes.
   [[nodiscard]] Result<Bytes> get_contract_code(std::string_view contract_strkey);
 
   /// Friendbot funding: GET {friendbot_url}?addr=G... Returns the body (JSON).
-  [[nodiscard]] Result<Json> friendbot_fund(std::string_view friendbot_url,
-                                            const Address& account);
+  [[nodiscard]] Result<Json> friendbot_fund(std::string_view friendbot_url, const Address& account);
 
-  [[nodiscard]] Result<TransactionResponse> send_and_poll(
-      const TransactionEnvelope& envelope, int max_polls = 20,
-      std::uint32_t poll_interval_ms = 1500);
+  [[nodiscard]] Result<TransactionResponse> send_and_poll(const TransactionEnvelope& envelope,
+                                                          int max_polls = 20,
+                                                          std::uint32_t poll_interval_ms = 1500);
 
   /// Escape hatch: raw JSON-RPC call for methods not covered above.
   [[nodiscard]] Result<Json> call(std::string_view method, Json params);

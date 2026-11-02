@@ -120,7 +120,9 @@ TEST(Sep53, SignVerify) {
 
 TEST(Sep5, Bip39Vector) {
   // BIP-39 test vector: known mnemonic + "TREZOR" passphrase -> known seed
-  const char* phrase = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+  const char* phrase =
+      "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon "
+      "about";
   auto seed = sep5::mnemonic_to_seed(phrase, "TREZOR");
   ASSERT_TRUE(seed.ok()) << seed.error().describe();
   static const std::uint8_t expect[16] = {0xc5, 0x52, 0x57, 0xc3, 0x60, 0xc0, 0x7c, 0x72,
@@ -144,7 +146,7 @@ TEST(Sep5, KnownAccount) {
 TEST(Sep5, Validation) {
   EXPECT_FALSE(sep5::validate_mnemonic("not a real mnemonic phrase at all").ok());
   EXPECT_FALSE(sep5::validate_mnemonic("abandon abandon abandon").ok());  // 3 words
-  EXPECT_TRUE(sep5::validate_mnemonic(
-      "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about")
+  EXPECT_TRUE(sep5::validate_mnemonic("abandon abandon abandon abandon abandon abandon abandon "
+                                      "abandon abandon abandon abandon about")
                   .ok());
 }

@@ -120,8 +120,7 @@ class STELLAR_API TransactionEnvelope {
   /// Raw signature preimage: XDR(TransactionSignaturePayload).
   [[nodiscard]] Result<Bytes> signature_preimage(const Network& network) const;
   /// SHA-256(preimage) — what signers sign and what serves as the tx hash.
-  [[nodiscard]] Result<std::array<std::uint8_t, 32>> signature_base(
-      const Network& network) const;
+  [[nodiscard]] Result<std::array<std::uint8_t, 32>> signature_base(const Network& network) const;
   /// The transaction hash (same as signature_base for v1/fee-bump).
   [[nodiscard]] Result<std::array<std::uint8_t, 32>> hash(const Network& network) const {
     return signature_base(network);
@@ -160,12 +159,12 @@ struct STELLAR_API SignatureHelpers {
   /// CAP-40 ed25519-signed-payload signature: signs `payload ++ message` and
   /// carries the signed-payload signer-key hint (last 4 bytes of the encoded
   /// key). `key` is the signer key built by signed_payload_signer_key().
-  static Result<xdr::DecoratedSignature> signed_payload_signature(
-      const Signer& signer, const xdr::SignerKey& key, ByteSpan payload,
-      ByteSpan message);
+  static Result<xdr::DecoratedSignature> signed_payload_signature(const Signer& signer,
+                                                                  const xdr::SignerKey& key,
+                                                                  ByteSpan payload,
+                                                                  ByteSpan message);
   /// Construct the ED25519_SIGNED_PAYLOAD signer key for an account + payload.
-  static Result<xdr::SignerKey> signed_payload_signer_key(const Address& account,
-                                                        ByteSpan payload);
+  static Result<xdr::SignerKey> signed_payload_signer_key(const Address& account, ByteSpan payload);
 };
 
 }  // namespace stellar::inline v1

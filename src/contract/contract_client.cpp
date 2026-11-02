@@ -9,9 +9,9 @@
 
 namespace stellar::inline v1 {
 
-Result<std::array<std::uint8_t, 32>>
-contract::id_from_address(const Network& network, const Address& deployer,
-                          std::array<std::uint8_t, 32> salt) {
+Result<std::array<std::uint8_t, 32>> contract::id_from_address(const Network& network,
+                                                               const Address& deployer,
+                                                               std::array<std::uint8_t, 32> salt) {
   STELLAR_TRY_ASSIGN(auto scaddr, deployer.to_sc_address());
   xdr::HashIDPreimageContractId pc;
   pc.networkID = xdr::uint256{network.id()};
@@ -27,9 +27,9 @@ std::string contract::contract_strkey(std::array<std::uint8_t, 32> id) {
   return sk.encode();
 }
 
-Result<xdr::HostFunction>
-contract::invoke_fn(std::string_view contract_id, std::string_view function,
-                    const std::vector<xdr::SCVal>& args) {
+Result<xdr::HostFunction> contract::invoke_fn(std::string_view contract_id,
+                                              std::string_view function,
+                                              const std::vector<xdr::SCVal>& args) {
   auto cid = StrKey::decode(contract_id);
   if (!cid.ok() || cid->kind() != StrKeyKind::kContract) {
     return Error::invalid_argument("expected a C... contract id");
@@ -42,10 +42,10 @@ contract::invoke_fn(std::string_view contract_id, std::string_view function,
   return xdr::HostFunction::hostFunctionTypeInvokeContract(a);
 }
 
-Result<xdr::HostFunction>
-contract::create_contract_fn(const Address& deployer, std::array<std::uint8_t, 32> salt,
-                             const xdr::ContractExecutable& executable,
-                             const std::vector<xdr::SCVal>&) {
+Result<xdr::HostFunction> contract::create_contract_fn(const Address& deployer,
+                                                       std::array<std::uint8_t, 32> salt,
+                                                       const xdr::ContractExecutable& executable,
+                                                       const std::vector<xdr::SCVal>&) {
   STELLAR_TRY_ASSIGN(auto scaddr, deployer.to_sc_address());
   xdr::CreateContractArgs a;
   a.contractIDPreimage = xdr::ContractIDPreimage::contractIdPreimageFromAddress(
@@ -54,10 +54,9 @@ contract::create_contract_fn(const Address& deployer, std::array<std::uint8_t, 3
   return xdr::HostFunction::hostFunctionTypeCreateContract(a);
 }
 
-Result<xdr::HostFunction>
-contract::create_contract_v2_fn(const Address& deployer, std::array<std::uint8_t, 32> salt,
-                                const xdr::ContractExecutable& executable,
-                                const std::vector<xdr::SCVal>& constructor_args) {
+Result<xdr::HostFunction> contract::create_contract_v2_fn(
+    const Address& deployer, std::array<std::uint8_t, 32> salt,
+    const xdr::ContractExecutable& executable, const std::vector<xdr::SCVal>& constructor_args) {
   STELLAR_TRY_ASSIGN(auto scaddr, deployer.to_sc_address());
   xdr::CreateContractArgsV2 a;
   a.contractIDPreimage = xdr::ContractIDPreimage::contractIdPreimageFromAddress(
@@ -111,29 +110,27 @@ Result<xdr::SCVal> sign_soroban_preimage(const Network& network, const KeyPair& 
 }
 }  // namespace
 
-Result<xdr::SorobanAuthorizationEntry>
-contract::sign_auth_entry(const xdr::SorobanAuthorizationEntry& entry,
-                          const Network& network, const KeyPair& kp) {
+Result<xdr::SorobanAuthorizationEntry> contract::sign_auth_entry(
+    const xdr::SorobanAuthorizationEntry& entry, const Network& network, const KeyPair& kp) {
   switch (entry.credentials.type()) {
     case xdr::SorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
       return entry;  // nothing to sign — tx-level sig covers it
     case xdr::SorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS: {
       const auto& addr_creds = entry.credentials.address();
       STELLAR_TRY_ASSIGN(auto sig_val,
-                         sign_soroban_preimage(network, kp, entry.rootInvocation,
-                                               addr_creds.nonce,
+                         sign_soroban_preimage(network, kp, entry.rootInvocation, addr_creds.nonce,
                                                addr_creds.signatureExpirationLedger));
       xdr::SorobanAuthorizationEntry out = entry;
-      out.credentials = xdr::SorobanCredentials::sorobanCredentialsAddress(
-          xdr::SorobanAddressCredentials{addr_creds.address, addr_creds.nonce,
-                                         addr_creds.signatureExpirationLedger, sig_val});
+      out.credentials =
+          xdr::SorobanCredentials::sorobanCredentialsAddress(xdr::SorobanAddressCredentials{
+              addr_creds.address, addr_creds.nonce, addr_creds.signatureExpirationLedger, sig_val});
       return out;
     }
     case xdr::SorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2: {
       const auto& ac = entry.credentials.addressV2();
       STELLAR_TRY_ASSIGN(auto sig_val,
-                         sign_soroban_preimage(network, kp, entry.rootInvocation,
-                                               ac.nonce, ac.signatureExpirationLedger));
+                         sign_soroban_preimage(network, kp, entry.rootInvocation, ac.nonce,
+                                               ac.signatureExpirationLedger));
       xdr::SorobanAuthorizationEntry out = entry;
       auto v2 = ac;
       v2.signature = sig_val;
@@ -146,13 +143,12 @@ contract::sign_auth_entry(const xdr::SorobanAuthorizationEntry& entry,
       const auto& wd = entry.credentials.addressWithDelegates();
       const auto& ac = wd.addressCredentials;
       STELLAR_TRY_ASSIGN(auto sig_val,
-                         sign_soroban_preimage(network, kp, entry.rootInvocation,
-                                               ac.nonce, ac.signatureExpirationLedger));
+                         sign_soroban_preimage(network, kp, entry.rootInvocation, ac.nonce,
+                                               ac.signatureExpirationLedger));
       xdr::SorobanAuthorizationEntry out = entry;
       auto wd_out = wd;
       wd_out.addressCredentials.signature = sig_val;
-      out.credentials =
-          xdr::SorobanCredentials::sorobanCredentialsAddressWithDelegates(wd_out);
+      out.credentials = xdr::SorobanCredentials::sorobanCredentialsAddressWithDelegates(wd_out);
       return out;
     }
     default:
@@ -174,12 +170,10 @@ Result<xdr::SCVal> ContractClient::call(const Address& source, std::string_view 
   if (sim.results.empty()) {
     return Error{ErrorCode::kProtocolError, "simulation returned no result value"};
   }
-  if (sim.result &&
-      sim.result->result.code() == xdr::TransactionResultCode::txSUCCESS) {
+  if (sim.result && sim.result->result.code() == xdr::TransactionResultCode::txSUCCESS) {
     // sanity-check the op result too when present
     const auto& ops_res = sim.result->result.results();
-    if (!ops_res.empty() &&
-        ops_res[0].code() == xdr::OperationResultCode::opINNER &&
+    if (!ops_res.empty() && ops_res[0].code() == xdr::OperationResultCode::opINNER &&
         ops_res[0].tr().type() == xdr::OperationType::INVOKE_HOST_FUNCTION &&
         ops_res[0].tr().invokeHostFunctionResult().code() !=
             xdr::InvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS) {
@@ -189,17 +183,20 @@ Result<xdr::SCVal> ContractClient::call(const Address& source, std::string_view 
   return sim.results[0];
 }
 
-Result<TransactionResponse> ContractClient::invoke(
-    const Address& source, std::int64_t sequence_number, const Signer& signer,
-    std::string_view function, const std::vector<xdr::SCVal>& args,
-    const InvokeOptions& opts) {
+Result<TransactionResponse> ContractClient::invoke(const Address& source,
+                                                   std::int64_t sequence_number,
+                                                   const Signer& signer, std::string_view function,
+                                                   const std::vector<xdr::SCVal>& args,
+                                                   const InvokeOptions& opts) {
   STELLAR_TRY_ASSIGN(auto fn, contract::invoke_fn(id_, function, args));
   return invoke_host_function(source, sequence_number, signer, fn, opts);
 }
 
-Result<TransactionResponse> ContractClient::invoke_host_function(
-    const Address& source, std::int64_t sequence_number, const Signer& signer,
-    const xdr::HostFunction& fn, const InvokeOptions& opts) {
+Result<TransactionResponse> ContractClient::invoke_host_function(const Address& source,
+                                                                 std::int64_t sequence_number,
+                                                                 const Signer& signer,
+                                                                 const xdr::HostFunction& fn,
+                                                                 const InvokeOptions& opts) {
   TransactionBuilder b(source);
   b.sequence_number(sequence_number)
       .fee(opts.fee ? opts.fee : 100)
@@ -239,17 +236,16 @@ Result<TransactionResponse> ContractClient::invoke_host_function(
   if (!opts.fee_bump) return rpc_.send_and_poll(env);
   // wrap in fee-bump
   FeeBumpBuilder fb(source);
-  fb.fee(opts.bump_fee ? opts.bump_fee
-                       : static_cast<std::int64_t>(opts.fee ? opts.fee : 100) +
-                             sd.resourceFee + 100);
+  fb.fee(opts.bump_fee
+             ? opts.bump_fee
+             : static_cast<std::int64_t>(opts.fee ? opts.fee : 100) + sd.resourceFee + 100);
   STELLAR_TRY_ASSIGN(auto bumped, fb.build(env));
   auto bumped_env = TransactionEnvelope::of_fee_bump(bumped);
   STELLAR_TRY(bumped_env.sign(signer, network_));
   return rpc_.send_and_poll(bumped_env);
 }
 
-Result<Bytes> ContractClient::auth_signature_payload(
-    const xdr::SorobanAuthorizationEntry& entry) {
+Result<Bytes> ContractClient::auth_signature_payload(const xdr::SorobanAuthorizationEntry& entry) {
   // expose the exact preimage the signer signs — external signers use this
   const auto* cred = entry.credentials.get_if_address();
   if (!cred) {
@@ -260,8 +256,7 @@ Result<Bytes> ContractClient::auth_signature_payload(
   pre.invocation = entry.rootInvocation;
   pre.nonce = cred->nonce;
   pre.signatureExpirationLedger = cred->signatureExpirationLedger;
-  return xdr::encode(
-      xdr::HashIDPreimage::envelopeTypeSorobanAuthorization(pre));
+  return xdr::encode(xdr::HashIDPreimage::envelopeTypeSorobanAuthorization(pre));
 }
 
 Result<std::vector<DelegateNode>> ContractClient::invocation_tree(
@@ -278,9 +273,8 @@ Result<std::vector<DelegateNode>> ContractClient::invocation_tree(
     } else if (const auto* cred = e.credentials.get_if_addressWithDelegates()) {
       n.address = cred->addressCredentials.address;
       n.signature = cred->addressCredentials.signature;
-      std::function<void(const xdr::SorobanDelegateSignature&, DelegateNode&)>
-          fill = [&fill](const xdr::SorobanDelegateSignature& d,
-                         DelegateNode& node) {
+      std::function<void(const xdr::SorobanDelegateSignature&, DelegateNode&)> fill =
+          [&fill](const xdr::SorobanDelegateSignature& d, DelegateNode& node) {
             node.address = d.address;
             node.signature = *d.signature;
             if (!d.nestedDelegates->empty()) {
@@ -304,9 +298,8 @@ Result<std::vector<DelegateNode>> ContractClient::invocation_tree(
   return roots;
 }
 
-Result<xdr::SCVal> ContractClient::call_json(const Address& source,
-                                               std::string_view function,
-                                               const Json& args) {
+Result<xdr::SCVal> ContractClient::call_json(const Address& source, std::string_view function,
+                                             const Json& args) {
   if (!spec_) {
     return Error::invalid_argument("call_json requires set_spec");
   }
@@ -314,9 +307,11 @@ Result<xdr::SCVal> ContractClient::call_json(const Address& source,
   return call(source, function, scvals);
 }
 
-Result<TransactionResponse> ContractClient::invoke_json(
-    const Address& source, std::int64_t sequence_number, const Signer& signer,
-    std::string_view function, const Json& args, const InvokeOptions& opts) {
+Result<TransactionResponse> ContractClient::invoke_json(const Address& source,
+                                                        std::int64_t sequence_number,
+                                                        const Signer& signer,
+                                                        std::string_view function, const Json& args,
+                                                        const InvokeOptions& opts) {
   if (!spec_) {
     return Error::invalid_argument("invoke_json requires set_spec");
   }

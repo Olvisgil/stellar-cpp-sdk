@@ -39,15 +39,29 @@ namespace {
 void dump_string(std::string& out, std::string_view s) {
   out += '"';
   for (const char ch : s) {
-      const auto c = static_cast<unsigned char>(ch);
+    const auto c = static_cast<unsigned char>(ch);
     switch (c) {
-      case '"': out += "\\\""; break;
-      case '\\': out += "\\\\"; break;
-      case '\b': out += "\\b"; break;
-      case '\f': out += "\\f"; break;
-      case '\n': out += "\\n"; break;
-      case '\r': out += "\\r"; break;
-      case '\t': out += "\\t"; break;
+      case '"':
+        out += "\\\"";
+        break;
+      case '\\':
+        out += "\\\\";
+        break;
+      case '\b':
+        out += "\\b";
+        break;
+      case '\f':
+        out += "\\f";
+        break;
+      case '\n':
+        out += "\\n";
+        break;
+      case '\r':
+        out += "\\r";
+        break;
+      case '\t':
+        out += "\\t";
+        break;
       default:
         if (c < 0x20) {
           char buf[8];
@@ -66,16 +80,24 @@ void dump_string(std::string& out, std::string_view s) {
 std::string Json::dump() const {
   std::string out;
   switch (kind()) {
-    case Kind::kNull: out = "null"; break;
-    case Kind::kBool: out = as_bool() ? "true" : "false"; break;
-    case Kind::kInt: out = std::to_string(as_int()); break;
+    case Kind::kNull:
+      out = "null";
+      break;
+    case Kind::kBool:
+      out = as_bool() ? "true" : "false";
+      break;
+    case Kind::kInt:
+      out = std::to_string(as_int());
+      break;
     case Kind::kDouble: {
       char buf[32];
       std::snprintf(buf, sizeof(buf), "%.17g", as_double());
       out = buf;
       break;
     }
-    case Kind::kString: dump_string(out, as_string()); break;
+    case Kind::kString:
+      dump_string(out, as_string());
+      break;
     case Kind::kArray: {
       out = '[';
       bool first = true;
@@ -129,16 +151,22 @@ struct Parser {
     skip_ws();
     if (pos >= s.size()) return fail("unexpected end");
     switch (s[pos]) {
-      case 'n': return lit("null", Json(nullptr));
-      case 't': return lit("true", Json(true));
-      case 'f': return lit("false", Json(false));
+      case 'n':
+        return lit("null", Json(nullptr));
+      case 't':
+        return lit("true", Json(true));
+      case 'f':
+        return lit("false", Json(false));
       case '"': {
         STELLAR_TRY_ASSIGN(auto str, string());
         return Json(std::move(str));
       }
-      case '[': return array();
-      case '{': return object();
-      default: return number();
+      case '[':
+        return array();
+      case '{':
+        return object();
+      default:
+        return number();
     }
   }
 
@@ -158,26 +186,47 @@ struct Parser {
         if (pos >= s.size()) return fail("truncated escape");
         const char e = s[pos++];
         switch (e) {
-          case '"': out += '"'; break;
-          case '\\': out += '\\'; break;
-          case '/': out += '/'; break;
-          case 'b': out += '\b'; break;
-          case 'f': out += '\f'; break;
-          case 'n': out += '\n'; break;
-          case 'r': out += '\r'; break;
-          case 't': out += '\t'; break;
+          case '"':
+            out += '"';
+            break;
+          case '\\':
+            out += '\\';
+            break;
+          case '/':
+            out += '/';
+            break;
+          case 'b':
+            out += '\b';
+            break;
+          case 'f':
+            out += '\f';
+            break;
+          case 'n':
+            out += '\n';
+            break;
+          case 'r':
+            out += '\r';
+            break;
+          case 't':
+            out += '\t';
+            break;
           case 'u': {
             if (pos + 4 > s.size()) return fail("truncated \\u");
             unsigned cp = 0;
             for (int i = 0; i < 4; ++i) {
               const char h = s[pos++];
               cp <<= 4;
-              if (h >= '0' && h <= '9') cp |= static_cast<unsigned>(h - '0');
-              else if (h >= 'a' && h <= 'f') cp |= static_cast<unsigned>(h - 'a' + 10);
-              else if (h >= 'A' && h <= 'F') cp |= static_cast<unsigned>(h - 'A' + 10);
-              else return fail("bad \\u hex");
+              if (h >= '0' && h <= '9')
+                cp |= static_cast<unsigned>(h - '0');
+              else if (h >= 'a' && h <= 'f')
+                cp |= static_cast<unsigned>(h - 'a' + 10);
+              else if (h >= 'A' && h <= 'F')
+                cp |= static_cast<unsigned>(h - 'A' + 10);
+              else
+                return fail("bad \\u hex");
             }
-            if (cp < 0x80) out += static_cast<char>(cp);
+            if (cp < 0x80)
+              out += static_cast<char>(cp);
             else if (cp < 0x800) {
               out += static_cast<char>(0xC0 | (cp >> 6));
               out += static_cast<char>(0x80 | (cp & 0x3F));
@@ -188,7 +237,8 @@ struct Parser {
             }
             break;
           }
-          default: return fail("bad escape");
+          default:
+            return fail("bad escape");
         }
       } else if (c < 0x20) {
         return fail("unescaped control char in string");
@@ -272,8 +322,7 @@ struct Parser {
       if (pos >= s.size() || s[pos] != ':') return fail("expected ':'");
       ++pos;
       STELLAR_TRY_ASSIGN(auto v, value());
-      if (!out.emplace(std::move(key), std::move(v)).second)
-        return fail("duplicate object key");
+      if (!out.emplace(std::move(key), std::move(v)).second) return fail("duplicate object key");
       skip_ws();
       if (pos >= s.size()) return fail("unterminated object");
       if (s[pos] == '}') {

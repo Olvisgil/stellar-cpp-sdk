@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // Live-network integration test against a real Stellar RPC endpoint.
 // Skips unless STELLAR_RPC_ENDPOINT is set (e.g. https://soroban-testnet.stellar.org).
+#include <fstream>
 #include "stellar/contract/contract_client.hpp"
 #include "stellar/contract/contract_meta.hpp"
-#include <fstream>
 #include "stellar/contract/scval.hpp"
-#include "stellar/tx/ops.hpp"
-#include "stellar/xdr/codec.hpp"
 #include "stellar/core/asset.hpp"
 #include "stellar/http.hpp"
 #include "stellar/rpc/rpc_client.hpp"
+#include "stellar/tx/ops.hpp"
+#include "stellar/xdr/codec.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -19,7 +19,9 @@
 
 using namespace stellar::v1;
 
-static const char* endpoint() { return std::getenv("STELLAR_RPC_ENDPOINT"); }
+static const char* endpoint() {
+  return std::getenv("STELLAR_RPC_ENDPOINT");
+}
 
 class RpcLive : public ::testing::Test {
  protected:
@@ -102,8 +104,7 @@ TEST_F(RpcLive, ContractInvokeEndToEnd) {
 
   // fetch the new account's sequence number
   xdr::LedgerKey key = xdr::LedgerKey::account(
-      xdr::LedgerKeyAccount{xdr::PublicKey::publicKeyTypeEd25519(
-          xdr::uint256{kp->public_key()})});
+      xdr::LedgerKeyAccount{xdr::PublicKey::publicKeyTypeEd25519(xdr::uint256{kp->public_key()})});
   auto entries = rpc.get_ledger_entries({key});
   ASSERT_TRUE(entries.ok()) << entries.error().describe();
   ASSERT_EQ(entries->entries.size(), 1u);
@@ -143,17 +144,15 @@ TEST_F(RpcLive, VendoredWasmDeployInvoke) {
   ASSERT_TRUE(kp.ok());
   auto src = Address::parse(kp->account_id());
   ASSERT_TRUE(src.ok());
-  const std::string friendbot =
-      net == Network::testnet() ? "https://friendbot.stellar.org"
-                                : "http://localhost:8000/friendbot";
+  const std::string friendbot = net == Network::testnet() ? "https://friendbot.stellar.org"
+                                                          : "http://localhost:8000/friendbot";
   HttpRequest fr;
   fr.method = "GET";
   fr.url = friendbot + "?addr=" + kp->account_id();
   ASSERT_TRUE(http.perform(fr).ok());
 
   xdr::LedgerKey key = xdr::LedgerKey::account(
-      xdr::LedgerKeyAccount{xdr::PublicKey::publicKeyTypeEd25519(
-          xdr::uint256{kp->public_key()})});
+      xdr::LedgerKeyAccount{xdr::PublicKey::publicKeyTypeEd25519(xdr::uint256{kp->public_key()})});
   auto entries = rpc.get_ledger_entries({key});
   ASSERT_TRUE(entries.ok());
   auto seq = entries->entries[0].data.account().seqNum + 1;
@@ -167,8 +166,9 @@ TEST_F(RpcLive, VendoredWasmDeployInvoke) {
 
   // 1) upload wasm
   auto upload_fn = contract::upload_wasm_fn(ByteSpan(wasm.data(), wasm.size()));
-  auto upload_res = ContractClient(rpc, net, "C" + std::string(56 - 1, 'A')) // id unused for upload
-                        .invoke_host_function(*src, seq, signer, upload_fn);
+  auto upload_res =
+      ContractClient(rpc, net, "C" + std::string(56 - 1, 'A'))  // id unused for upload
+          .invoke_host_function(*src, seq, signer, upload_fn);
   ASSERT_TRUE(upload_res.ok()) << upload_res.error().describe();
   ASSERT_EQ(upload_res->status, "SUCCESS");
   ++seq;
@@ -177,8 +177,8 @@ TEST_F(RpcLive, VendoredWasmDeployInvoke) {
   // 2) deploy contract v2 (no constructor args)
   std::array<std::uint8_t, 32> salt{};
   salt.fill(0x42);  // deterministic salt — contract id is derived from it
-  auto create_fn = contract::create_contract_v2_fn(
-      *src, salt, contract::wasm_executable(wasm_hash), {});
+  auto create_fn =
+      contract::create_contract_v2_fn(*src, salt, contract::wasm_executable(wasm_hash), {});
   ASSERT_TRUE(create_fn.ok()) << create_fn.error().describe();
   auto create_res = ContractClient(rpc, net, "C" + std::string(56 - 1, 'A'))
                         .invoke_host_function(*src, seq, signer, *create_fn);
@@ -194,8 +194,8 @@ TEST_F(RpcLive, VendoredWasmDeployInvoke) {
   // 3) attach the decoded spec from the same wasm, then spec-driven call
   auto meta = parse_contract_meta(ByteSpan(wasm.data(), wasm.size()));
   ASSERT_TRUE(meta.ok());
-  auto spec = ContractSpec::decode(
-      ByteSpan(meta->spec_entries_xdr.data(), meta->spec_entries_xdr.size()));
+  auto spec =
+      ContractSpec::decode(ByteSpan(meta->spec_entries_xdr.data(), meta->spec_entries_xdr.size()));
   ASSERT_TRUE(spec.ok());
   cc.set_spec(*spec);
 

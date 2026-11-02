@@ -156,7 +156,8 @@ class Encoder {
 /// Reads input bytes with strict canonical checks.
 class Decoder {
  public:
-  Decoder(ByteSpan data, const Limits& limits) : cur_(data.data()), end_(data.data() + data.size()), limits_(limits) {}
+  Decoder(ByteSpan data, const Limits& limits)
+      : cur_(data.data()), end_(data.data() + data.size()), limits_(limits) {}
 
   [[nodiscard]] std::size_t remaining() const { return static_cast<std::size_t>(end_ - cur_); }
   [[nodiscard]] const Error& error() const { return error_; }
@@ -177,7 +178,9 @@ class Decoder {
   void leave() noexcept { --depth_; }
   struct DepthGuard {
     explicit DepthGuard(Decoder& d) : d_(d), ok_(d.enter()) {}
-    ~DepthGuard() { if (ok_) d_.leave(); }
+    ~DepthGuard() {
+      if (ok_) d_.leave();
+    }
     explicit operator bool() const { return ok_; }
     Decoder& d_;
     bool ok_;
@@ -191,7 +194,8 @@ class Decoder {
     return true;
   }
   bool u32(std::uint32_t& v) {
-    if (remaining() < 4) return fail(ErrorCode::kDecodeFailed, "unexpected end of input reading uint32");
+    if (remaining() < 4)
+      return fail(ErrorCode::kDecodeFailed, "unexpected end of input reading uint32");
     v = (static_cast<std::uint32_t>(cur_[0]) << 24) | (static_cast<std::uint32_t>(cur_[1]) << 16) |
         (static_cast<std::uint32_t>(cur_[2]) << 8) | static_cast<std::uint32_t>(cur_[3]);
     cur_ += 4;
@@ -237,14 +241,16 @@ class Decoder {
 
   /// Reads exactly n bytes then verifies zero padding to a 4-byte boundary.
   bool opaque_n(std::size_t n, std::vector<std::uint8_t>& out) {
-    if (n > remaining()) return fail(ErrorCode::kDecodeFailed, "opaque data extends past end of input");
+    if (n > remaining())
+      return fail(ErrorCode::kDecodeFailed, "opaque data extends past end of input");
     out.assign(cur_, cur_ + n);
     cur_ += n;
     return pad4(n);
   }
   /// Reads exactly n bytes into `out` then verifies padding.
   bool opaque_fixed(std::size_t n, std::uint8_t* out) {
-    if (n > remaining()) return fail(ErrorCode::kDecodeFailed, "fixed opaque extends past end of input");
+    if (n > remaining())
+      return fail(ErrorCode::kDecodeFailed, "fixed opaque extends past end of input");
     std::memcpy(out, cur_, n);
     cur_ += n;
     return pad4(n);
@@ -268,7 +274,8 @@ class Decoder {
  private:
   bool pad4(std::size_t n) {
     const std::size_t pad = (4 - n % 4) % 4;
-    if (pad > remaining()) return fail(ErrorCode::kDecodeFailed, "padding extends past end of input");
+    if (pad > remaining())
+      return fail(ErrorCode::kDecodeFailed, "padding extends past end of input");
     for (std::size_t i = 0; i < pad; ++i) {
       if (cur_[i] != 0) return fail(ErrorCode::kDecodeFailed, "non-zero padding byte");
     }
@@ -308,7 +315,8 @@ struct Codec<bool> {
     v = (r.next32() & 1) != 0;
     return true;
   }
-  template <typename F> static void visit_fields(bool, F&&) {}
+  template <typename F>
+  static void visit_fields(bool, F&&) {}
 };
 
 template <typename T>
@@ -326,7 +334,8 @@ struct Codec<T> {
     v = static_cast<T>(r.next32());
     return true;
   }
-  template <typename F> static void visit_fields(const T&, F&&) {}
+  template <typename F>
+  static void visit_fields(const T&, F&&) {}
 };
 
 template <typename T>
@@ -344,7 +353,8 @@ struct Codec<T> {
     v = static_cast<T>(r.next64());
     return true;
   }
-  template <typename F> static void visit_fields(const T&, F&&) {}
+  template <typename F>
+  static void visit_fields(const T&, F&&) {}
 };
 
 // ---------------------------------------------------------------------------
@@ -365,7 +375,8 @@ struct Codec<std::array<std::uint8_t, N>> {
     for (auto& b : v) b = r.next8();
     return true;
   }
-  template <typename F> static void visit_fields(const std::array<std::uint8_t, N>&, F&&) {}
+  template <typename F>
+  static void visit_fields(const std::array<std::uint8_t, N>&, F&&) {}
 };
 
 /// T[n] (element is not a byte)
@@ -387,7 +398,8 @@ struct Codec<std::array<T, N>> {
       if (!Codec<T>::gen(x, r, depth + 1)) return false;
     return true;
   }
-  template <typename F> static void visit_fields(const std::array<T, N>&, F&&) {}
+  template <typename F>
+  static void visit_fields(const std::array<T, N>&, F&&) {}
 };
 
 /// opaque<N>
@@ -412,7 +424,8 @@ struct Codec<BoundedBytes<N>> {
     for (auto& b : v) b = r.next8();
     return true;
   }
-  template <typename F> static void visit_fields(const BoundedBytes<N>&, F&&) {}
+  template <typename F>
+  static void visit_fields(const BoundedBytes<N>&, F&&) {}
 };
 
 /// string<N>
@@ -440,7 +453,8 @@ struct Codec<BoundedString<N>> {
     for (auto& c : v) c = kChars[r.index(sizeof(kChars) - 1)];
     return true;
   }
-  template <typename F> static void visit_fields(const BoundedString<N>&, F&&) {}
+  template <typename F>
+  static void visit_fields(const BoundedString<N>&, F&&) {}
 };
 
 /// T<N>
@@ -472,7 +486,8 @@ struct Codec<BoundedVector<T, N>> {
       if (!Codec<T>::gen(x, r, depth + 1)) return false;
     return true;
   }
-  template <typename F> static void visit_fields(const BoundedVector<T, N>&, F&&) {}
+  template <typename F>
+  static void visit_fields(const BoundedVector<T, N>&, F&&) {}
 };
 
 /// T*
@@ -505,7 +520,8 @@ struct Codec<std::optional<T>> {
     v.emplace();
     return Codec<T>::gen(*v, r, depth + 1);
   }
-  template <typename F> static void visit_fields(const std::optional<T>&, F&&) {}
+  template <typename F>
+  static void visit_fields(const std::optional<T>&, F&&) {}
 };
 
 /// Recursive-type indirection: delegates to T.
@@ -518,7 +534,8 @@ struct Codec<Box<T>> {
     v.get() = T{};
     return Codec<T>::gen(v.get(), r, depth + 1);
   }
-  template <typename F> static void visit_fields(const Box<T>& v, F&& f) {
+  template <typename F>
+  static void visit_fields(const Box<T>& v, F&& f) {
     Codec<T>::visit_fields(v.get(), std::forward<F>(f));
   }
 };

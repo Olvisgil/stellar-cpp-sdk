@@ -19,32 +19,33 @@ namespace stellar::inline v1 {
 enum class ErrorCode : std::int32_t {
   kOk = 0,
   kInvalidArgument,
-  kDecodeFailed,      ///< XDR decode: malformed input, bound/depth exceeded, non-canonical.
-  kEncodeFailed,      ///< XDR encode: value violates a bound or has an invalid discriminant.
-  kCryptoFailed,      ///< Key generation, signing or verification failed.
-  kInvalidStrKey,     ///< SEP-23 strkey rejected (bad checksum, length, padding or version).
-  kInvalidAddress,    ///< Address/memo/asset/mnemonic rejected by validation.
-  kNetwork,           ///< Transport-level failure (DNS, connect, TLS, read/write).
+  kDecodeFailed,    ///< XDR decode: malformed input, bound/depth exceeded, non-canonical.
+  kEncodeFailed,    ///< XDR encode: value violates a bound or has an invalid discriminant.
+  kCryptoFailed,    ///< Key generation, signing or verification failed.
+  kInvalidStrKey,   ///< SEP-23 strkey rejected (bad checksum, length, padding or version).
+  kInvalidAddress,  ///< Address/memo/asset/mnemonic rejected by validation.
+  kNetwork,         ///< Transport-level failure (DNS, connect, TLS, read/write).
   kTimeout,
-  kRateLimited,       ///< HTTP 429.
-  kHttpError,         ///< Any other non-2xx HTTP status.
-  kRpcError,          ///< JSON-RPC error object.
-  kHorizonError,      ///< Horizon problem+json response.
-  kTransactionFailed, ///< Submitted transaction failed; detail carries result codes.
-  kAuthError,         ///< SEP-10/SEP-45 challenge or signing failure.
-  kProtocolError,     ///< Peer/server sent a structurally invalid response.
+  kRateLimited,        ///< HTTP 429.
+  kHttpError,          ///< Any other non-2xx HTTP status.
+  kRpcError,           ///< JSON-RPC error object.
+  kHorizonError,       ///< Horizon problem+json response.
+  kTransactionFailed,  ///< Submitted transaction failed; detail carries result codes.
+  kAuthError,          ///< SEP-10/SEP-45 challenge or signing failure.
+  kProtocolError,      ///< Peer/server sent a structurally invalid response.
   kOutOfRange,
   kNotSupported,
-  kInternal,          ///< SDK bug or violated internal invariant.
+  kInternal,  ///< SDK bug or violated internal invariant.
 };
 
 std::string_view error_code_name(ErrorCode code) noexcept;
 
 /// Machine-readable detail attached to domain errors. Optional per layer.
 struct ErrorDetail {
-  int http_status = 0;                       ///< HTTP status code, when relevant.
-  std::int64_t rpc_code = 0;                 ///< JSON-RPC error.code, when relevant.
-  std::vector<std::string> result_codes;     ///< Stellar tx/operation result codes (e.g. "tx_failed", "op_no_trust").
+  int http_status = 0;        ///< HTTP status code, when relevant.
+  std::int64_t rpc_code = 0;  ///< JSON-RPC error.code, when relevant.
+  std::vector<std::string>
+      result_codes;  ///< Stellar tx/operation result codes (e.g. "tx_failed", "op_no_trust").
   bool operator==(const ErrorDetail&) const = default;
 };
 
@@ -55,9 +56,15 @@ class Error {
   Error() = default;
   Error(ErrorCode code, std::string message) : code_(code), message_(std::move(message)) {}
 
-  static Error invalid_argument(std::string message) { return {ErrorCode::kInvalidArgument, std::move(message)}; }
-  static Error decode_failed(std::string message) { return {ErrorCode::kDecodeFailed, std::move(message)}; }
-  static Error encode_failed(std::string message) { return {ErrorCode::kEncodeFailed, std::move(message)}; }
+  static Error invalid_argument(std::string message) {
+    return {ErrorCode::kInvalidArgument, std::move(message)};
+  }
+  static Error decode_failed(std::string message) {
+    return {ErrorCode::kDecodeFailed, std::move(message)};
+  }
+  static Error encode_failed(std::string message) {
+    return {ErrorCode::kEncodeFailed, std::move(message)};
+  }
   static Error network(std::string message) { return {ErrorCode::kNetwork, std::move(message)}; }
   static Error timeout(std::string message) { return {ErrorCode::kTimeout, std::move(message)}; }
   static Error internal(std::string message) { return {ErrorCode::kInternal, std::move(message)}; }

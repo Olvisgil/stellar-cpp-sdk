@@ -25,7 +25,7 @@ STELLAR_API Bytes message_bytes(const Network& n, const std::array<std::uint8_t,
 
 /// Sign a message for `kp` on `n`.
 STELLAR_API Result<std::array<std::uint8_t, 64>> sign(const Network& n, const KeyPair& kp,
-                                                    ByteSpan payload);
+                                                      ByteSpan payload);
 
 /// Verify a SEP-53 signature for `account` on `n`.
 STELLAR_API bool verify(const Network& n, const std::array<std::uint8_t, 32>& ed25519,

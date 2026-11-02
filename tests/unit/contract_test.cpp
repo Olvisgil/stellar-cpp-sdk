@@ -1,9 +1,9 @@
 // Copyright 2026 The stellar-cpp-sdk Authors
 // SPDX-License-Identifier: Apache-2.0
+#include <fstream>
 #include "stellar/contract/contract_client.hpp"
 #include "stellar/contract/contract_meta.hpp"
 #include "stellar/contract/delegate_tree.hpp"
-#include <fstream>
 #include "stellar/contract/scval.hpp"
 #include "stellar/tx/ops.hpp"
 
@@ -41,12 +41,11 @@ TEST(ScVal, VecMapRoundTrip) {
   ASSERT_NE(pv, nullptr);
   ASSERT_EQ(pv->size(), 3u);
   EXPECT_EQ(*scval_get::u32((*pv)[0]), 1u);
-  EXPECT_EQ(std::string(scval_get::symbol((*pv)[1])->begin(),
-                        scval_get::symbol((*pv)[1])->end()),
+  EXPECT_EQ(std::string(scval_get::symbol((*pv)[1])->begin(), scval_get::symbol((*pv)[1])->end()),
             "two");
 
   auto m = scval::map({xdr::SCMapEntry{xdr::Box<xdr::SCVal>(scval::symbol("k")),
-                                     xdr::Box<xdr::SCVal>(scval::u32(5))}});
+                                       xdr::Box<xdr::SCVal>(scval::u32(5))}});
   const auto* pm = scval_get::map(m);
   ASSERT_NE(pm, nullptr);
   ASSERT_EQ(pm->size(), 1u);
@@ -60,7 +59,8 @@ TEST(ScVal, CanonicalOrdering) {
   EXPECT_LT(scval_compare(scval::u32(UINT32_MAX), scval::i64(-1)), 0);
   // vec elementwise
   EXPECT_LT(scval_compare(scval::vec({scval::u32(1)}), scval::vec({scval::u32(2)})), 0);
-  EXPECT_LT(scval_compare(scval::vec({scval::u32(1)}), scval::vec({scval::u32(1), scval::u32(0)})), 0);
+  EXPECT_LT(scval_compare(scval::vec({scval::u32(1)}), scval::vec({scval::u32(1), scval::u32(0)})),
+            0);
   // map keys sorted canonically for determinism checks
   EXPECT_LT(scval_compare(scval::symbol("a"), scval::symbol("b")), 0);
 }
@@ -85,9 +85,8 @@ TEST(Contract, IdDerivation) {
 }
 
 TEST(Contract, HostFunctionBuilders) {
-  auto fn = contract::invoke_fn(
-      "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA", "transfer",
-      {scval::u32(1), scval::symbol("x")});
+  auto fn = contract::invoke_fn("CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA",
+                                "transfer", {scval::u32(1), scval::symbol("x")});
   ASSERT_TRUE(fn.ok());
   EXPECT_EQ(fn->type(), xdr::HostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT);
   EXPECT_EQ(fn->invokeContract().args.size(), 2u);
@@ -104,13 +103,14 @@ TEST(Contract, HostFunctionBuilders) {
   EXPECT_EQ(up.type(), xdr::HostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM);
 
   // invoke_fn rejects non-contract strkeys
-  EXPECT_FALSE(contract::invoke_fn("GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", "f", {})
-                   .ok());
+  EXPECT_FALSE(
+      contract::invoke_fn("GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", "f", {})
+          .ok());
 }
 
 TEST(Contract, InvokeHostFunctionOpRoundTrip) {
-  auto fn = contract::invoke_fn(
-      "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA", "f", {scval::u32(1)});
+  auto fn = contract::invoke_fn("CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA", "f",
+                                {scval::u32(1)});
   ASSERT_TRUE(fn.ok());
   auto op = ops::invoke_host_function(*fn);
   EXPECT_EQ(op.body.type(), xdr::OperationType::INVOKE_HOST_FUNCTION);
@@ -167,15 +167,14 @@ Bytes wasm_with_sections(std::vector<std::pair<std::string, Bytes>> sections) {
 
 TEST(ContractMeta, CustomSections) {
   // contractmetav0: count=1, "name" -> "my-token" (LEB len-prefixed pairs)
-  const Bytes meta = {0x01, 0x04, 'n','a','m','e', 0x08, 'm','y','-','t','o','k','e','n'};
+  const Bytes meta = {0x01, 0x04, 'n', 'a', 'm', 'e', 0x08, 'm', 'y', '-', 't', 'o', 'k', 'e', 'n'};
   // contractspecv0: opaque XDR bytes we pass through
   const Bytes spec = {0xde, 0xad, 0xbe, 0xef};
   // contractenvmetav0: count=1, "v1.0.0"
-  const Bytes env = {0x01, 0x06, 'v','1','.','0','.','0'};
+  const Bytes env = {0x01, 0x06, 'v', '1', '.', '0', '.', '0'};
 
-  const auto wasm = wasm_with_sections({{"contractmetav0", meta},
-                                        {"contractspecv0", spec},
-                                        {"contractenvmetav0", env}});
+  const auto wasm = wasm_with_sections(
+      {{"contractmetav0", meta}, {"contractspecv0", spec}, {"contractenvmetav0", env}});
   auto m = parse_contract_meta(wasm);
   ASSERT_TRUE(m.ok()) << m.error().describe();
   EXPECT_EQ(m->name, "my-token");
@@ -196,8 +195,8 @@ TEST(ContractMeta, SpecDrivenArgs) {
   ASSERT_TRUE(i.ok() && i->type() == xdr::SCValType::SCV_I128);
   auto sym = scval_from_string("symbol", "transfer");
   ASSERT_TRUE(sym.ok() && sym->type() == xdr::SCValType::SCV_SYMBOL);
-  auto addr = scval_from_string(
-      "address", "GAGXKUDVJYEABJOSG7XPLATAGV3GXGZ6LIKYNCUUBKZITFMHRDR3BMEA");
+  auto addr =
+      scval_from_string("address", "GAGXKUDVJYEABJOSG7XPLATAGV3GXGZ6LIKYNCUUBKZITFMHRDR3BMEA");
   ASSERT_TRUE(addr.ok() && addr->type() == xdr::SCValType::SCV_ADDRESS);
   // complex types via JSON
   auto vec = scval_from_string("vec", "[1, 2, 3]");
@@ -253,8 +252,8 @@ TEST(ContractMeta, RealWasmSpec) {
   ASSERT_TRUE(meta.ok()) << meta.error().describe();
   ASSERT_FALSE(meta->spec_entries_xdr.empty()) << "no contractspecv0 section";
 
-  auto spec = ContractSpec::decode(ByteSpan(meta->spec_entries_xdr.data(),
-                                            meta->spec_entries_xdr.size()));
+  auto spec =
+      ContractSpec::decode(ByteSpan(meta->spec_entries_xdr.data(), meta->spec_entries_xdr.size()));
   ASSERT_TRUE(spec.ok()) << spec.error().describe();
 
   // hello(to: String) -> Vec<String>

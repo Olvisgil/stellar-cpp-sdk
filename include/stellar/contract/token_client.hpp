@@ -15,7 +15,8 @@ class STELLAR_API TokenClient {
 
   // ---- reads (simulated, no signature needed) ----
   [[nodiscard]] Result<std::int64_t> balance(const Address& source, const Address& owner);
-  [[nodiscard]] Result<std::int64_t> allowance(const Address& source, const Address& from, const Address& spender);
+  [[nodiscard]] Result<std::int64_t> allowance(const Address& source, const Address& from,
+                                               const Address& spender);
   [[nodiscard]] Result<std::int64_t> decimals(const Address& source);
   [[nodiscard]] Result<std::string> name(const Address& source);
   [[nodiscard]] Result<std::string> symbol(const Address& source);
@@ -23,19 +24,19 @@ class STELLAR_API TokenClient {
   [[nodiscard]] Result<std::int64_t> burnable(const Address& source, const Address& who);
 
   // ---- writes (sign + submit) ----
-  [[nodiscard]] Result<TransactionResponse>
-  transfer(const Address& source, std::int64_t seq, const Signer& signer,
-           const Address& from, const Address& to, std::int64_t amount);
-  [[nodiscard]] Result<TransactionResponse>
-  approve(const Address& source, std::int64_t seq, const Signer& signer,
-          const Address& from, const Address& spender, std::int64_t amount,
-          std::uint32_t expiration_ledger);
-  [[nodiscard]] Result<TransactionResponse>
-  burn(const Address& source, std::int64_t seq, const Signer& signer,
-       const Address& from, std::int64_t amount);
-  [[nodiscard]] Result<TransactionResponse>
-  clawback(const Address& source, std::int64_t seq, const Signer& signer,
-           const Address& admin, const Address& from, std::int64_t amount);
+  [[nodiscard]] Result<TransactionResponse> transfer(const Address& source, std::int64_t seq,
+                                                     const Signer& signer, const Address& from,
+                                                     const Address& to, std::int64_t amount);
+  [[nodiscard]] Result<TransactionResponse> approve(const Address& source, std::int64_t seq,
+                                                    const Signer& signer, const Address& from,
+                                                    const Address& spender, std::int64_t amount,
+                                                    std::uint32_t expiration_ledger);
+  [[nodiscard]] Result<TransactionResponse> burn(const Address& source, std::int64_t seq,
+                                                 const Signer& signer, const Address& from,
+                                                 std::int64_t amount);
+  [[nodiscard]] Result<TransactionResponse> clawback(const Address& source, std::int64_t seq,
+                                                     const Signer& signer, const Address& admin,
+                                                     const Address& from, std::int64_t amount);
 
   /// Extract the destination address from an SEP-41 event value — works on
   /// both plain (G...) and muxed (W...) contract destinations. Returns the
@@ -48,8 +49,8 @@ class STELLAR_API TokenClient {
   /// W-address event helper: extract a (topic, value) pair as strings —
   /// `topic` is the event symbol ("transfer"/"approve"/...), `value` decodes
   /// per SEP-41 (address, amount). Best-effort for logs/display.
-  [[nodiscard]] static Result<std::pair<std::string, std::string>>
-  decode_event(const EventRow& event);
+  [[nodiscard]] static Result<std::pair<std::string, std::string>> decode_event(
+      const EventRow& event);
 
  private:
   ContractClient& client_;

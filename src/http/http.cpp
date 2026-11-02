@@ -33,8 +33,8 @@ std::uint32_t retry_after_ms(const HttpResponse& res) {
 }
 
 bool retryable(long status) {
-  return status == 0 || status == 429 || status == 500 || status == 502 ||
-         status == 503 || status == 504;
+  return status == 0 || status == 429 || status == 500 || status == 502 || status == 503 ||
+         status == 504;
 }
 
 }  // namespace
@@ -51,8 +51,7 @@ Result<HttpResponse> RetryingTransport::perform(const HttpRequest& request) {
     const auto t0 = std::chrono::steady_clock::now();
     auto res = inner_.perform(req);
     const auto ms = static_cast<std::uint32_t>(
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::steady_clock::now() - t0)
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0)
             .count());
     if (!res.ok()) {
       if (metrics_) metrics_(0, ms);
@@ -64,26 +63,21 @@ Result<HttpResponse> RetryingTransport::perform(const HttpRequest& request) {
     // backoff: Retry-After wins, else exponential with jitter
     std::uint32_t wait = retry_after_ms(*res);
     if (wait == 0) {
-      wait = static_cast<std::uint32_t>(
-          base_delay_ms_ * (1u << attempt) * jitter(rng));
+      wait = static_cast<std::uint32_t>(base_delay_ms_ * (1u << attempt) * jitter(rng));
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(wait));
   }
 }
 
-
-
-
 void MultipartEncoder::add_field(std::string_view name, std::string_view value) {
-  body_ += "--" + boundary_ + "\r\nContent-Disposition: form-data; name=\"" +
-           std::string(name) + "\"\r\n\r\n" + std::string(value) + "\r\n";
+  body_ += "--" + boundary_ + "\r\nContent-Disposition: form-data; name=\"" + std::string(name) +
+           "\"\r\n\r\n" + std::string(value) + "\r\n";
 }
-void MultipartEncoder::add_file(std::string_view name, std::string_view filename,
-                                ByteSpan content, std::string_view mime) {
-  body_ += "--" + boundary_ +
-           "\r\nContent-Disposition: form-data; name=\"" + std::string(name) +
-           "\"; filename=\"" + std::string(filename) +
-           "\"\r\nContent-Type: " + std::string(mime) + "\r\n\r\n";
+void MultipartEncoder::add_file(std::string_view name, std::string_view filename, ByteSpan content,
+                                std::string_view mime) {
+  body_ += "--" + boundary_ + "\r\nContent-Disposition: form-data; name=\"" + std::string(name) +
+           "\"; filename=\"" + std::string(filename) + "\"\r\nContent-Type: " + std::string(mime) +
+           "\r\n\r\n";
   body_.append(reinterpret_cast<const char*>(content.data()), content.size());
   body_ += "\r\n";
 }
@@ -107,9 +101,7 @@ std::vector<EventStreamFrame> SseParser::feed(std::string_view chunk) {
     in_frame_ = true;
     const auto colon = line.find(':');
     const std::string field = line.substr(0, colon);
-    std::string value = colon == std::string::npos
-                            ? ""
-                            : line.substr(colon + 1);
+    std::string value = colon == std::string::npos ? "" : line.substr(colon + 1);
     if (!value.empty() && value.front() == ' ') value.erase(0, 1);
     if (field == "data") {
       if (!cur_.data.empty()) cur_.data += '\n';

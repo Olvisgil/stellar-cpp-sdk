@@ -23,15 +23,13 @@ Result<std::int64_t> i128_result(const xdr::SCVal& v) {
   return static_cast<std::int64_t>(p.lo);
 }
 
-Result<std::int64_t> read_i128(ContractClient& cc, const Address& src,
-                               std::string_view fn,
+Result<std::int64_t> read_i128(ContractClient& cc, const Address& src, std::string_view fn,
                                const std::vector<xdr::SCVal>& args) {
   STELLAR_TRY_ASSIGN(auto v, cc.call(src, fn, args));
   return i128_result(v);
 }
 
-Result<std::string> read_str(ContractClient& cc, const Address& src,
-                             std::string_view fn) {
+Result<std::string> read_str(ContractClient& cc, const Address& src, std::string_view fn) {
   STELLAR_TRY_ASSIGN(auto v, cc.call(src, fn, {}));
   if (const auto* s = scval_get::string(v)) {
     return std::string(s->begin(), s->end());
@@ -49,8 +47,7 @@ Result<std::int64_t> TokenClient::balance(const Address& src, const Address& own
 }
 Result<std::int64_t> TokenClient::allowance(const Address& src, const Address& from,
                                             const Address& spender) {
-  return read_i128(client_, src, "allowance",
-                   {scval::address(from), scval::address(spender)});
+  return read_i128(client_, src, "allowance", {scval::address(from), scval::address(spender)});
 }
 Result<std::int64_t> TokenClient::decimals(const Address& src) {
   STELLAR_TRY_ASSIGN(auto v, client_.call(src, "decimals", {}));
@@ -72,32 +69,31 @@ Result<std::int64_t> TokenClient::burnable(const Address& src, const Address& wh
   return read_i128(client_, src, "burnable", {scval::address(who)});
 }
 
-Result<TransactionResponse> TokenClient::transfer(
-    const Address& source, std::int64_t seq, const Signer& signer,
-    const Address& from, const Address& to, std::int64_t amount) {
+Result<TransactionResponse> TokenClient::transfer(const Address& source, std::int64_t seq,
+                                                  const Signer& signer, const Address& from,
+                                                  const Address& to, std::int64_t amount) {
   return client_.invoke(source, seq, signer, "transfer",
                         {scval::address(from), scval::address(to),
                          scval::i128(0, static_cast<std::uint64_t>(amount))});
 }
-Result<TransactionResponse> TokenClient::approve(
-    const Address& source, std::int64_t seq, const Signer& signer,
-    const Address& from, const Address& spender, std::int64_t amount,
-    std::uint32_t expiration_ledger) {
-  return client_.invoke(source, seq, signer, "approve",
-                        {scval::address(from), scval::address(spender),
-                         scval::i128(0, static_cast<std::uint64_t>(amount)),
-                         scval::u32(expiration_ledger)});
+Result<TransactionResponse> TokenClient::approve(const Address& source, std::int64_t seq,
+                                                 const Signer& signer, const Address& from,
+                                                 const Address& spender, std::int64_t amount,
+                                                 std::uint32_t expiration_ledger) {
+  return client_.invoke(
+      source, seq, signer, "approve",
+      {scval::address(from), scval::address(spender),
+       scval::i128(0, static_cast<std::uint64_t>(amount)), scval::u32(expiration_ledger)});
 }
-Result<TransactionResponse> TokenClient::burn(
-    const Address& source, std::int64_t seq, const Signer& signer,
-    const Address& from, std::int64_t amount) {
+Result<TransactionResponse> TokenClient::burn(const Address& source, std::int64_t seq,
+                                              const Signer& signer, const Address& from,
+                                              std::int64_t amount) {
   return client_.invoke(source, seq, signer, "burn",
-                        {scval::address(from),
-                         scval::i128(0, static_cast<std::uint64_t>(amount))});
+                        {scval::address(from), scval::i128(0, static_cast<std::uint64_t>(amount))});
 }
-Result<TransactionResponse> TokenClient::clawback(
-    const Address& source, std::int64_t seq, const Signer& signer,
-    const Address& admin, const Address& from, std::int64_t amount) {
+Result<TransactionResponse> TokenClient::clawback(const Address& source, std::int64_t seq,
+                                                  const Signer& signer, const Address& admin,
+                                                  const Address& from, std::int64_t amount) {
   return client_.invoke(source, seq, signer, "clawback",
                         {scval::address(admin), scval::address(from),
                          scval::i128(0, static_cast<std::uint64_t>(amount))});
@@ -111,12 +107,10 @@ Result<Address> TokenClient::event_address(const xdr::SCVal& v) {
 
 bool TokenClient::is_muxed_address(const xdr::SCVal& v) {
   const auto* a = scval_get::address(v);
-  return a &&
-         a->type() == xdr::SCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT;
+  return a && a->type() == xdr::SCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT;
 }
 
-Result<std::pair<std::string, std::string>> TokenClient::decode_event(
-    const EventRow& event) {
+Result<std::pair<std::string, std::string>> TokenClient::decode_event(const EventRow& event) {
   if (event.topic.empty()) return Error::invalid_argument("no topic");
   std::string topic = "<non-symbol>";
   if (const auto* s = scval_get::symbol(event.topic[0])) {

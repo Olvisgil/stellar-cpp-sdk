@@ -73,15 +73,14 @@ Result<Json> RpcClient::call(std::string_view method, Json params) {
 
   STELLAR_TRY_ASSIGN(auto res, transport_.perform(req));
   if (res.status < 200 || res.status >= 300) {
-    return Error{ErrorCode::kHttpError,
-                 "RPC endpoint returned HTTP " + std::to_string(res.status)};
+    return Error{ErrorCode::kHttpError, "RPC endpoint returned HTTP " + std::to_string(res.status)};
   }
   STELLAR_TRY_ASSIGN(auto doc, Json::parse(res.body));
   if (const auto* err = JsonRpc::error_of(doc)) {
-    const std::string msg = err->at("message").is_string()
-                                ? err->at("message").as_string()
-                                : "rpc error";
-    return Error{ErrorCode::kRpcError, msg + " (code " + std::to_string(err->at("code").as_int()) + ")"};
+    const std::string msg =
+        err->at("message").is_string() ? err->at("message").as_string() : "rpc error";
+    return Error{ErrorCode::kRpcError,
+                 msg + " (code " + std::to_string(err->at("code").as_int()) + ")"};
   }
   const auto* result = JsonRpc::result_of(doc);
   if (!result) return Error{ErrorCode::kProtocolError, "response has no 'result'"};
@@ -147,14 +146,16 @@ Result<FeeStats> RpcClient::get_fee_stats() {
   return f;
 }
 
-Result<Json> RpcClient::get_network() { return call("getNetwork", Json::object()); }
+Result<Json> RpcClient::get_network() {
+  return call("getNetwork", Json::object());
+}
 
 // ---------------------------------------------------------------------------
 // ledger entries / ledgers / events
 // ---------------------------------------------------------------------------
 
-Result<LedgerEntriesResponse>
-RpcClient::get_ledger_entries(const std::vector<xdr::LedgerKey>& keys) {
+Result<LedgerEntriesResponse> RpcClient::get_ledger_entries(
+    const std::vector<xdr::LedgerKey>& keys) {
   LedgerEntriesResponse out;
   // RPC cap: max 200 keys per request — chunk automatically
   for (std::size_t off = 0; off < keys.size(); off += 200) {
@@ -168,8 +169,7 @@ RpcClient::get_ledger_entries(const std::vector<xdr::LedgerKey>& keys) {
     params.set("keys", Json(std::move(jkeys)));
     STELLAR_TRY_ASSIGN(auto r, call("getLedgerEntries", std::move(params)));
     STELLAR_TRY_ASSIGN(auto chunk, parse_ledger_entries(r));
-    out.entries.insert(out.entries.end(),
-                       std::make_move_iterator(chunk.entries.begin()),
+    out.entries.insert(out.entries.end(), std::make_move_iterator(chunk.entries.begin()),
                        std::make_move_iterator(chunk.entries.end()));
     out.latest_ledger = chunk.latest_ledger;
   }
@@ -198,8 +198,7 @@ Result<LedgerEntriesResponse> RpcClient::parse_ledger_entries(const Json& r) {
       auto entry = xdr::decode<xdr::LedgerEntry>(*entry_bytes);
       if (entry.ok()) {
         row.data = entry->data;
-        row.last_modified_ledger =
-            static_cast<std::uint32_t>(entry->lastModifiedLedgerSeq);
+        row.last_modified_ledger = static_cast<std::uint32_t>(entry->lastModifiedLedgerSeq);
       } else {
         auto d = xdr::decode<xdr::LedgerEntryData>(*entry_bytes);
         if (d.ok()) {
@@ -210,8 +209,7 @@ Result<LedgerEntriesResponse> RpcClient::parse_ledger_entries(const Json& r) {
         }
       }
     }
-    if (auto n = need_u32(e, "lastModifiedLedgerSeq"); n.ok())
-      row.last_modified_ledger = *n;
+    if (auto n = need_u32(e, "lastModifiedLedgerSeq"); n.ok()) row.last_modified_ledger = *n;
     if (const auto* lt = e.find("liveUntilLedgerSeq"); lt && lt->is_number())
       row.live_until_ledger = static_cast<std::uint32_t>(lt->as_int());
     out.entries.push_back(std::move(row));
@@ -226,7 +224,8 @@ Result<LedgersResponse> RpcClient::get_ledgers(std::uint32_t start, std::uint32_
   STELLAR_TRY_ASSIGN(auto r, call("getLedgers", std::move(params)));
   LedgersResponse out;
   if (auto n = need_u32(r, "latestLedger"); n.ok()) out.latest_ledger = *n;
-  if (const auto* c = r.find("cursor"); c && c->is_string()) out.cursor = std::stoull(c->as_string());
+  if (const auto* c = r.find("cursor"); c && c->is_string())
+    out.cursor = std::stoull(c->as_string());
   for (const auto& l : safe_array(r.at("ledgers"))) {
     LedgerRow row;
     row.sequence = static_cast<std::uint32_t>(l.at("sequence").as_int());
@@ -281,7 +280,8 @@ Result<EventsResponse> RpcClient::get_events(std::uint32_t start_ledger,
     EventRow row;
     if (e.at("type").is_string()) row.type = e.at("type").as_string();
     row.ledger = static_cast<std::uint32_t>(e.at("ledger").as_int());
-    if (e.at("ledgerClosedAt").is_string()) row.ledger_closed_at = e.at("ledgerClosedAt").as_string();
+    if (e.at("ledgerClosedAt").is_string())
+      row.ledger_closed_at = e.at("ledgerClosedAt").as_string();
     if (e.at("contractId").is_string()) row.contract_id = e.at("contractId").as_string();
     if (e.at("id").is_string()) row.id = e.at("id").as_string();
     if (e.at("txHash").is_string()) row.tx_hash = e.at("txHash").as_string();
@@ -333,8 +333,7 @@ Result<TransactionResponse> RpcClient::get_transaction(std::string_view hash) {
   return out;
 }
 
-Result<SendTransactionResponse>
-RpcClient::send_transaction(const TransactionEnvelope& envelope) {
+Result<SendTransactionResponse> RpcClient::send_transaction(const TransactionEnvelope& envelope) {
   STELLAR_TRY_ASSIGN(auto b64, envelope.to_base64());
   Json params = Json::object();
   params.set("transaction", std::move(b64));
@@ -352,23 +351,21 @@ RpcClient::send_transaction(const TransactionEnvelope& envelope) {
   return out;
 }
 
-Result<SimulateTransactionResponse>
-RpcClient::simulate_transaction(const xdr::Transaction& tx) {
+Result<SimulateTransactionResponse> RpcClient::simulate_transaction(const xdr::Transaction& tx) {
   // simulateTransaction expects a TransactionEnvelope; an unsigned envelope
   // (empty signatures) is fine for simulation.
   return simulate_envelope(TransactionEnvelope::of_transaction(tx));
 }
 
-Result<SimulateTransactionResponse>
-RpcClient::simulate_envelope(const TransactionEnvelope& envelope) {
+Result<SimulateTransactionResponse> RpcClient::simulate_envelope(
+    const TransactionEnvelope& envelope) {
   STELLAR_TRY_ASSIGN(auto bytes, envelope.to_bytes());
   Json params = Json::object();
   params.set("transaction", base64_encode(ByteSpan(bytes.data(), bytes.size())));
   return simulate_envelope_params(std::move(params));
 }
 
-Result<SimulateTransactionResponse>
-RpcClient::simulate_envelope_params(Json params) {
+Result<SimulateTransactionResponse> RpcClient::simulate_envelope_params(Json params) {
   STELLAR_TRY_ASSIGN(auto r, call("simulateTransaction", std::move(params)));
   SimulateTransactionResponse out;
   if (const auto* e = r.find("error"); e && e->is_string()) out.error = e->as_string();
@@ -379,16 +376,18 @@ RpcClient::simulate_envelope_params(Json params) {
     out.result = std::move(v);
   }
   // field renamed over time: current "transactionData", legacy "transactionDataXdr"
-  const auto* td = r.at("transactionData").is_string() ? &r.at("transactionData")
+  const auto* td = r.at("transactionData").is_string()      ? &r.at("transactionData")
                    : r.at("transactionDataXdr").is_string() ? &r.at("transactionDataXdr")
-                                                          : nullptr;
+                                                            : nullptr;
   if (td) {
     STELLAR_TRY_ASSIGN(auto v, xdr_b64<xdr::SorobanTransactionData>(td->as_string()));
     out.transaction_data = std::move(v);
   }
   if (const auto* m = r.find("minResourceFee")) {
-    if (m->is_string()) out.min_resource_fee = std::stoll(m->as_string());
-    else if (m->is_number()) out.min_resource_fee = m->as_int();
+    if (m->is_string())
+      out.min_resource_fee = std::stoll(m->as_string());
+    else if (m->is_number())
+      out.min_resource_fee = m->as_int();
   }
   for (const auto& res : safe_array(r.at("results"))) {
     if (res.at("xdr").is_string()) {
@@ -398,8 +397,7 @@ RpcClient::simulate_envelope_params(Json params) {
     // auth entries are nested inside each invocation's result
     for (const auto& a : safe_array(res.at("auth"))) {
       if (a.is_string()) {
-        STELLAR_TRY_ASSIGN(auto v,
-                           xdr_b64<xdr::SorobanAuthorizationEntry>(a.as_string()));
+        STELLAR_TRY_ASSIGN(auto v, xdr_b64<xdr::SorobanAuthorizationEntry>(a.as_string()));
         out.auth.push_back(std::move(v));
       }
     }
@@ -431,15 +429,16 @@ RpcClient::simulate_envelope_params(Json params) {
   return out;
 }
 
-Result<TransactionResponse>
-RpcClient::send_and_poll(const TransactionEnvelope& envelope, int max_polls,
-                         std::uint32_t poll_interval_ms) {
+Result<TransactionResponse> RpcClient::send_and_poll(const TransactionEnvelope& envelope,
+                                                     int max_polls,
+                                                     std::uint32_t poll_interval_ms) {
   SendTransactionResponse sent;
   for (int attempt = 0;; ++attempt) {
     STELLAR_TRY_ASSIGN(sent, send_transaction(envelope));
     if (sent.status != "TRY_AGAIN_LATER" || attempt >= 10) break;
     // server says retry: linear backoff
-    std::this_thread::sleep_for(std::chrono::milliseconds(500u * static_cast<std::uint32_t>(attempt + 1)));
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(500u * static_cast<std::uint32_t>(attempt + 1)));
   }
   if (sent.status == "DUPLICATE") {
     // a resubmitted tx the server already knows — keep polling for its result
@@ -457,8 +456,7 @@ RpcClient::send_and_poll(const TransactionEnvelope& envelope, int max_polls,
   for (int i = 0; i < max_polls; ++i) {
     if (i > 0) std::this_thread::sleep_for(std::chrono::milliseconds(poll_interval_ms));
     auto res = get_transaction(sent.hash);
-    if (res.ok() && res->found &&
-        (res->status == "SUCCESS" || res->status == "FAILED")) {
+    if (res.ok() && res->found && (res->status == "SUCCESS" || res->status == "FAILED")) {
       return res;
     }
   }
@@ -470,14 +468,13 @@ namespace {
 const xdr::Hash* scval_get_contract_instance(const xdr::SCVal& v) {
   if (v.type() != xdr::SCValType::SCV_CONTRACT_INSTANCE) return nullptr;
   const auto& e = v.instance().get().executable;
-  return e.type() == xdr::ContractExecutableType::CONTRACT_EXECUTABLE_WASM
-             ? &e.wasm_hash()
-             : nullptr;
+  return e.type() == xdr::ContractExecutableType::CONTRACT_EXECUTABLE_WASM ? &e.wasm_hash()
+                                                                           : nullptr;
 }
 }  // namespace
 
-Result<SimulateTransactionResponse>
-RpcClient::simulate(const TransactionEnvelope& envelope, const SimulateOptions& opts) {
+Result<SimulateTransactionResponse> RpcClient::simulate(const TransactionEnvelope& envelope,
+                                                        const SimulateOptions& opts) {
   STELLAR_TRY_ASSIGN(auto bytes, envelope.to_bytes());
   Json params = Json::object();
   params.set("transaction", base64_encode(ByteSpan(bytes.data(), bytes.size())));
@@ -492,8 +489,8 @@ RpcClient::simulate(const TransactionEnvelope& envelope, const SimulateOptions& 
   return simulate_envelope_params(std::move(params));
 }
 
-Result<std::vector<TransactionResponse>>
-RpcClient::get_transactions(const std::vector<std::string>& tx_hashes) {
+Result<std::vector<TransactionResponse>> RpcClient::get_transactions(
+    const std::vector<std::string>& tx_hashes) {
   std::vector<TransactionResponse> out;
   for (std::size_t off = 0; off < tx_hashes.size(); off += 50) {
     Json::Array j;
@@ -513,7 +510,8 @@ RpcClient::get_transactions(const std::vector<std::string>& tx_hashes) {
         row.result = std::move(v);
       }
       if (t.at("envelopeXdr").is_string()) {
-        STELLAR_TRY_ASSIGN(auto v, xdr_b64<xdr::TransactionEnvelope>(t.at("envelopeXdr").as_string()));
+        STELLAR_TRY_ASSIGN(auto v,
+                           xdr_b64<xdr::TransactionEnvelope>(t.at("envelopeXdr").as_string()));
         row.envelope = std::move(v);
       }
       out.push_back(std::move(row));
@@ -522,8 +520,8 @@ RpcClient::get_transactions(const std::vector<std::string>& tx_hashes) {
   return out;
 }
 
-Result<EventsResponse>
-RpcClient::query_events(std::uint32_t start_ledger, std::vector<EventsFilter> filters) {
+Result<EventsResponse> RpcClient::query_events(std::uint32_t start_ledger,
+                                               std::vector<EventsFilter> filters) {
   // beta: same wire shape as getEvents under the queryEvents method name
   Json params = Json::object();
   params.set("startLedger", Json(static_cast<std::int64_t>(start_ledger)));
@@ -561,8 +559,8 @@ Result<xdr::AccountEntry> RpcClient::get_account(const Address& account) {
     pk = mx.med25519().ed25519;
   else
     pk = mx.ed25519();
-  xdr::LedgerKey key = xdr::LedgerKey::account(
-      xdr::LedgerKeyAccount{xdr::PublicKey::publicKeyTypeEd25519(pk)});
+  xdr::LedgerKey key =
+      xdr::LedgerKey::account(xdr::LedgerKeyAccount{xdr::PublicKey::publicKeyTypeEd25519(pk)});
   STELLAR_TRY_ASSIGN(auto res, get_ledger_entries({key}));
   if (res.entries.empty() || res.entries[0].data.type() != xdr::LedgerEntryType::ACCOUNT) {
     return Error{ErrorCode::kProtocolError, "account not found"};
@@ -570,17 +568,15 @@ Result<xdr::AccountEntry> RpcClient::get_account(const Address& account) {
   return res.entries[0].data.account();
 }
 
-Result<xdr::LedgerEntryData>
-RpcClient::get_contract_data(std::string_view contract_id, const xdr::SCVal& key) {
+Result<xdr::LedgerEntryData> RpcClient::get_contract_data(std::string_view contract_id,
+                                                          const xdr::SCVal& key) {
   auto cid = StrKey::decode(contract_id);
   if (!cid.ok() || cid->kind() != StrKeyKind::kContract) {
     return Error::invalid_argument("expected a C... contract id");
   }
-  xdr::LedgerKey lk = xdr::LedgerKey::contractData(
-      xdr::LedgerKeyContractData{
-          xdr::SCAddress::scAddressTypeContract(xdr::ContractID{*cid->fixed()}),
-          key,
-          xdr::ContractDataDurability::PERSISTENT});
+  xdr::LedgerKey lk = xdr::LedgerKey::contractData(xdr::LedgerKeyContractData{
+      xdr::SCAddress::scAddressTypeContract(xdr::ContractID{*cid->fixed()}), key,
+      xdr::ContractDataDurability::PERSISTENT});
   STELLAR_TRY_ASSIGN(auto res, get_ledger_entries({lk}));
   if (res.entries.empty()) {
     return Error{ErrorCode::kProtocolError, "contract data not found"};
@@ -594,15 +590,11 @@ Result<Bytes> RpcClient::get_contract_code(std::string_view contract_id) {
     return Error::invalid_argument("expected a C... contract id");
   }
   // two-step: instance entry -> wasm executable hash -> contractCode entry
-  xdr::SCAddress scaddr =
-      xdr::SCAddress::scAddressTypeContract(xdr::ContractID{*cid->fixed()});
-  xdr::LedgerKey instance_key = xdr::LedgerKey::contractData(
-      xdr::LedgerKeyContractData{scaddr,
-                                 xdr::SCVal::scvLedgerKeyContractInstance(),
-                                 xdr::ContractDataDurability::PERSISTENT});
+  xdr::SCAddress scaddr = xdr::SCAddress::scAddressTypeContract(xdr::ContractID{*cid->fixed()});
+  xdr::LedgerKey instance_key = xdr::LedgerKey::contractData(xdr::LedgerKeyContractData{
+      scaddr, xdr::SCVal::scvLedgerKeyContractInstance(), xdr::ContractDataDurability::PERSISTENT});
   STELLAR_TRY_ASSIGN(auto inst, get_ledger_entries({instance_key}));
-  if (inst.entries.empty() ||
-      inst.entries[0].data.type() != xdr::LedgerEntryType::CONTRACT_DATA) {
+  if (inst.entries.empty() || inst.entries[0].data.type() != xdr::LedgerEntryType::CONTRACT_DATA) {
     return Error{ErrorCode::kProtocolError, "contract instance not found"};
   }
   const auto* cd = inst.entries[0].data.get_if_contractData();
@@ -611,8 +603,7 @@ Result<Bytes> RpcClient::get_contract_code(std::string_view contract_id) {
   if (!inst_val) {
     return Error{ErrorCode::kProtocolError, "instance val has no executable"};
   }
-  xdr::LedgerKey code_key =
-      xdr::LedgerKey::contractCode(xdr::LedgerKeyContractCode{*inst_val});
+  xdr::LedgerKey code_key = xdr::LedgerKey::contractCode(xdr::LedgerKeyContractCode{*inst_val});
   STELLAR_TRY_ASSIGN(auto res, get_ledger_entries({code_key}));
   if (res.entries.empty()) {
     return Error{ErrorCode::kProtocolError, "contract code not found"};
@@ -636,10 +627,8 @@ Result<Json> RpcClient::get_json(std::string_view url) {
   return Json::parse(res.body);
 }
 
-Result<Json> RpcClient::friendbot_fund(std::string_view friendbot_url,
-                                       const Address& account) {
-  const std::string url =
-      std::string(friendbot_url) + "?addr=" + account.to_string();
+Result<Json> RpcClient::friendbot_fund(std::string_view friendbot_url, const Address& account) {
+  const std::string url = std::string(friendbot_url) + "?addr=" + account.to_string();
   return get_json(url);
 }
 
