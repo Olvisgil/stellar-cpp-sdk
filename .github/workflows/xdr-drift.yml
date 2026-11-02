@@ -1,0 +1,28 @@
+name: xdr-drift
+on:
+  schedule:
+    - cron: '33 9 * * 1'   # weekly, Mondays
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare pinned tag against latest rs-stellar-xdr release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          pinned=$(grep '^rs-stellar-xdr-tag=' xdr/VERSION | cut -d= -f2)
+          latest=$(gh api repos/stellar/rs-stellar-xdr/releases/latest --jq .tag_name)
+          echo "pinned=$pinned latest=$latest"
+          if [ "$pinned" != "$latest" ]; then
+            gh issue create \
+              --title "xdr-drift: rs-stellar-xdr ${latest} released (pinned ${pinned})" \
+              --body "A newer rs-stellar-xdr release exists.\n\n- pinned: ${pinned}\n- latest: ${latest}\n\nFollow docs/maintainers/protocol-upgrade.md to re-vendor XDR inputs." \
+              --label "xdr-drift" || true
+          fi

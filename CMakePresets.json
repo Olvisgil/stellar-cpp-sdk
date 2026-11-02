@@ -1,0 +1,73 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 24, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "dev",
+      "binaryDir": "${sourceDir}/build/dev",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "STELLAR_SDK_BUILD_TESTS": "ON",
+        "STELLAR_SDK_WERROR": "OFF"
+      }
+    },
+    {
+      "name": "release",
+      "binaryDir": "${sourceDir}/build/release",
+      "generator": "Ninja",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "STELLAR_SDK_BUILD_TESTS": "ON" }
+    },
+    {
+      "name": "asan-ubsan",
+      "binaryDir": "${sourceDir}/build/asan-ubsan",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "STELLAR_SDK_ENABLE_SANITIZERS": "ON",
+        "STELLAR_SDK_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "tsan",
+      "binaryDir": "${sourceDir}/build/tsan",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "STELLAR_SDK_ENABLE_TSAN": "ON",
+        "STELLAR_SDK_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "fuzz",
+      "binaryDir": "${sourceDir}/build/fuzz",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "STELLAR_SDK_BUILD_FUZZERS": "ON",
+        "STELLAR_SDK_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "msvc",
+      "binaryDir": "${sourceDir}/build/msvc",
+      "generator": "Visual Studio 17 2022",
+      "cacheVariables": { "STELLAR_SDK_BUILD_TESTS": "ON" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "dev", "configurePreset": "dev" },
+    { "name": "release", "configurePreset": "release" },
+    { "name": "asan-ubsan", "configurePreset": "asan-ubsan" },
+    { "name": "tsan", "configurePreset": "tsan" },
+    { "name": "fuzz", "configurePreset": "fuzz" },
+    { "name": "msvc", "configurePreset": "msvc", "configuration": "Debug" }
+  ],
+  "testPresets": [
+    { "name": "dev", "configurePreset": "dev", "output": { "outputOnFailure": true } },
+    { "name": "release", "configurePreset": "release", "output": { "outputOnFailure": true } },
+    { "name": "asan-ubsan", "configurePreset": "asan-ubsan", "output": { "outputOnFailure": true } },
+    { "name": "tsan", "configurePreset": "tsan", "output": { "outputOnFailure": true } },
+    { "name": "msvc", "configurePreset": "msvc", "configuration": "Debug", "output": { "outputOnFailure": true } }
+  ]
+}

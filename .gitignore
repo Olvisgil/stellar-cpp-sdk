@@ -1,0 +1,29 @@
+# Build output
+build/
+out/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+a.out
+*.dSYM/
+
+# Editor / OS
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+
+# Tooling
+.devin/
+.vcpkg-root/
+vcpkg_installed/
+compile_commands.json
+.cache/
+.pytest_cache/
+__pycache__/
+tools/compat/node_modules/
+tools/compat/package*.json

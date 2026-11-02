@@ -1,0 +1,28 @@
+name: fuzz
+on:
+  pull_request:
+  schedule:
+    - cron: '17 4 * * *'   # nightly long run
+permissions:
+  contents: read
+
+jobs:
+  libfuzzer:
+    runs-on: ubuntu-24.04
+    env:
+      CC: clang
+      CXX: clang++
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: sudo apt-get update && sudo apt-get install -y clang
+      - run: cmake --preset fuzz
+      - run: cmake --build --preset fuzz --target fuzz_xdr_decode
+      - name: Short run (PR)
+        if: github.event_name == 'pull_request'
+        run: ./build/fuzz/tests/fuzz_xdr_decode -max_total_time=60 -print_final_stats=1
+      - name: Nightly run
+        if: github.event_name == 'schedule'
+        run: ./build/fuzz/tests/fuzz_xdr_decode -max_total_time=900 -print_final_stats=1

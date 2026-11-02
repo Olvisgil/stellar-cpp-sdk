@@ -1,0 +1,38 @@
+name: sanitizers
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+
+jobs:
+  asan-ubsan:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: cmake --preset asan-ubsan
+      - run: cmake --build --preset asan-ubsan
+      - name: Test
+        run: ctest --preset asan-ubsan
+        env:
+          ASAN_OPTIONS: detect_leaks=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+
+  tsan:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: cmake --preset tsan
+      - run: cmake --build --preset tsan
+      - run: ctest --preset tsan

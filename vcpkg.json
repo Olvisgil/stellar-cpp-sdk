@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "stellar-cpp-sdk",
+  "version": "0.1.0",
+  "dependencies": [
+    "libsodium",
+    "curl",
+    "nlohmann-json",
+    "tomlplusplus",
+    "gtest"
+  ]
+}

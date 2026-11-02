@@ -1,0 +1,6 @@
+# Pinned Stellar XDR inputs. Update with tools/update_xdr.py --tag <rs-stellar-xdr tag>.
+protocol=30
+rs-stellar-xdr-tag=v30.0.0
+rs-stellar-xdr-commit=3c2aa43d2ab54d429ae44aa5143d805bf5dba7e2
+stellar-xdr-commit=4f524bbac80c781c06e4fb5fc93a2d0d331d6705
+xdr-json-sha256=8c53e8376c42763f658bc181213516d6c7591842ba4b5fb6959effc2ce30cfde

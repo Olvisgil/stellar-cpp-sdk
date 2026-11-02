@@ -1,0 +1,68 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+
+jobs:
+  codegen:
+    # Generated files must be byte-identical to a fresh regeneration, and the
+    # vendored XDR inputs must match their recorded sha256s.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 tools/xdrgen/generate.py --check
+      - run: python3 tools/update_xdr.py --check
+
+  format:
+    # clang-format on handwritten sources only; generated code is excluded.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 19 clang-format
+          git ls-files '*.hpp' '*.cpp' ':(exclude)*/generated/*' \
+            | xargs clang-format-19 --dry-run --Werror
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, preset: dev, cc: gcc, cxx: g++ }
+          - { os: ubuntu-24.04, preset: dev, cc: clang, cxx: clang++ }
+          - { os: macos-15, preset: dev }
+          - { os: windows-2022, preset: msvc }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang (ubuntu)
+        if: matrix.cc == 'clang'
+        run: sudo apt-get update && sudo apt-get install -y clang
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Configure
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: cmake --preset ${{ matrix.preset }}
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+      - name: Test
+        run: ctest --preset ${{ matrix.preset }}
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
