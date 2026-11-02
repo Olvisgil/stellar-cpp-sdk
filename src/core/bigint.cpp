@@ -5,6 +5,8 @@
 
 #include "stellar/util/encoding.hpp"
 
+#include <algorithm>
+
 namespace stellar::inline v1 {
 
 template <std::size_t N, bool Signed>

@@ -24,14 +24,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install clang-format
-        run: |
-          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /usr/share/keyrings/llvm.gpg >/dev/null
-          echo "deb [signed-by=/usr/share/keyrings/llvm.gpg] https://apt.llvm.org/noble/ llvm-toolchain-noble-19 main" | sudo tee /etc/apt/sources.list.d/llvm.list
-          sudo apt-get update -qq && sudo apt-get install -y -qq clang-format-19
+      - run: sudo apt-get update && sudo apt-get install -y clang-format
       - run: |
           git ls-files '*.hpp' '*.cpp' ':(exclude)*/generated/*' \
-            | xargs clang-format-19 --dry-run --Werror
+            | xargs clang-format --dry-run --Werror
 
   build:
     strategy:
@@ -54,21 +50,12 @@ jobs:
       - name: Install libsodium (macos)
         if: runner.os == 'macOS'
         run: brew install libsodium curl
-      - name: Install libsodium (windows)
+      - name: Configure (windows, vcpkg manifest)
         if: runner.os == 'Windows'
-        run: |
-          git clone --depth 1 -b stable https://github.com/jedisct1/libsodium $env:TEMP\libsodium
-          cd $env:TEMP\libsodium
-          .\msvc-scripts\msvc-test.ps1 -MsvcToolset v143 -BuildConfiguration Release -PlatformToolset v143 -Platform x64 -OutDir $env:TEMP\libsodium-out -DistPackages $false
-          echo "SODIUM_ROOT=$env:TEMP\libsodium" >> $env:GITHUB_ENV
-        shell: pwsh
-      - name: Configure (windows env)
-        if: runner.os == 'Windows'
-        env:
-          SODIUM_LIBRARY: ${{ runner.temp }}\libsodium\Build\Release\x64\libsodium.lib
-          SODIUM_INCLUDE_DIR: ${{ runner.temp }}\libsodium\src\libsodium\include
-          CMAKE_TOOLCHAIN_FILE: ""
-        run: cmake --preset ${{ matrix.preset }}
+        run: >-
+          cmake --preset ${{ matrix.preset }}
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
