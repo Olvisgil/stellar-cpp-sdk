@@ -82,9 +82,11 @@ jobs:
       - uses: actions/checkout@v4
       - run: sudo apt-get update && sudo apt-get install -y ninja-build
       - name: vcpkg install (overlay port)
+        # --classic: the repo's root vcpkg.json would otherwise force manifest
+        # mode, which rejects package-name arguments.
         run: >-
           "$VCPKG_INSTALLATION_ROOT/vcpkg" install stellar-cpp-sdk
-          --overlay-ports="$PWD/ports" --triplet=x64-linux
+          --overlay-ports="$PWD/ports" --triplet=x64-linux --classic
       - name: Consume installed port
         run: |
           mkdir -p /tmp/consumer && cd /tmp/consumer
