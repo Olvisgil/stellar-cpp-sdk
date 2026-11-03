@@ -32,6 +32,7 @@ add_library(stellar_base STATIC
   src/util/encoding.cpp
 )
 add_library(stellar::base ALIAS stellar_base)
+target_compile_features(stellar_base PUBLIC cxx_std_20)
 target_include_directories(stellar_base
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
          $<INSTALL_INTERFACE:include>)
@@ -49,6 +50,7 @@ if(MSVC)
   target_compile_options(stellar_xdr PRIVATE /bigobj)
 endif()
 add_library(stellar::xdr ALIAS stellar_xdr)
+target_compile_features(stellar_xdr PUBLIC cxx_std_20)
 target_link_libraries(stellar_xdr PUBLIC stellar::base)
 stellar_set_warnings(stellar_xdr)
 # Generated code is noisy; keep warnings non-fatal for it.
@@ -102,6 +104,7 @@ add_library(stellar_core STATIC
   src/tx/transaction.cpp
 )
 add_library(stellar::core ALIAS stellar_core)
+target_compile_features(stellar_core PUBLIC cxx_std_20)
 target_link_libraries(stellar_core PUBLIC stellar::xdr PRIVATE stellar_sodium CURL::libcurl)
 target_compile_definitions(stellar_core PRIVATE STELLAR_SDK_BUILD)
 stellar_set_warnings(stellar_core)
