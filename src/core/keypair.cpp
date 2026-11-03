@@ -52,6 +52,7 @@ Result<KeyPair> KeyPair::random() {
   KeyPair kp;
   std::array<std::uint8_t, 64> sk64;
   std::array<std::uint8_t, 32> seed;
+  randombytes_buf(seed.data(), seed.size());
   crypto_sign_seed_keypair(kp.public_.data(), sk64.data(), seed.data());
   kp.secret_ = SecretBytes(seed);
   sodium_memzero(seed.data(), seed.size());
