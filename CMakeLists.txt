@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(stellar-cpp-sdk VERSION 0.1.1 LANGUAGES CXX)
+project(stellar-cpp-sdk VERSION 0.1.2 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -22,11 +22,6 @@ include(Warnings)
 # ---------------------------------------------------------------------------
 # stellar::base — Result/Error + encoding utilities (no deps)
 # ---------------------------------------------------------------------------
-# static builds must not emit dllexport/dllimport attributes
-if(NOT BUILD_SHARED_LIBS)
-  add_compile_definitions(STELLAR_SDK_STATIC_DEFINE)
-endif()
-
 add_library(stellar_base STATIC
   src/util/error.cpp
   src/util/encoding.cpp
@@ -36,7 +31,6 @@ target_compile_features(stellar_base PUBLIC cxx_std_20)
 target_include_directories(stellar_base
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
          $<INSTALL_INTERFACE:include>)
-target_compile_definitions(stellar_base PRIVATE STELLAR_SDK_BUILD)
 stellar_set_warnings(stellar_base)
 
 # ---------------------------------------------------------------------------
@@ -106,7 +100,6 @@ add_library(stellar_core STATIC
 add_library(stellar::core ALIAS stellar_core)
 target_compile_features(stellar_core PUBLIC cxx_std_20)
 target_link_libraries(stellar_core PUBLIC stellar::xdr PRIVATE stellar_sodium CURL::libcurl)
-target_compile_definitions(stellar_core PRIVATE STELLAR_SDK_BUILD)
 stellar_set_warnings(stellar_core)
 
 # ---------------------------------------------------------------------------

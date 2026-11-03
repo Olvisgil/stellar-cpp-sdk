@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2
+
+- `export.hpp` defaults `STELLAR_API` to static (empty); Windows consumers no
+  longer need `STELLAR_SDK_STATIC_DEFINE` to avoid `dllimport` attributes.
+- `StellarSdkConfig.cmake` is idempotent — repeated `find_package(StellarSdk)`
+  calls no longer fail on a duplicate `stellar_sodium` target.
+
 ## 0.1.1
 
 - `ports/stellar-cpp-sdk` vcpkg overlay port + `vcpkg-port` CI job that installs

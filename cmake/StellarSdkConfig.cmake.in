@@ -4,17 +4,20 @@ find_dependency(CURL REQUIRED)
 
 # Re-create the `stellar_sodium` imported target the exported targets reference
 # (same discovery order as the SDK build: vcpkg's unofficial-sodium first).
-find_package(unofficial-sodium CONFIG QUIET)
-if(TARGET unofficial-sodium::sodium)
-  add_library(stellar_sodium INTERFACE IMPORTED)
-  target_link_libraries(stellar_sodium INTERFACE unofficial-sodium::sodium)
-else()
-  find_library(_stellar_sodium_library NAMES sodium libsodium REQUIRED)
-  find_path(_stellar_sodium_include sodium.h REQUIRED)
-  add_library(stellar_sodium UNKNOWN IMPORTED)
-  set_target_properties(stellar_sodium PROPERTIES
-    IMPORTED_LOCATION "${_stellar_sodium_library}"
-    INTERFACE_INCLUDE_DIRECTORIES "${_stellar_sodium_include}")
+# Guarded so repeated find_package(StellarSdk) calls stay idempotent.
+if(NOT TARGET stellar_sodium)
+  find_package(unofficial-sodium CONFIG QUIET)
+  if(TARGET unofficial-sodium::sodium)
+    add_library(stellar_sodium INTERFACE IMPORTED)
+    target_link_libraries(stellar_sodium INTERFACE unofficial-sodium::sodium)
+  else()
+    find_library(_stellar_sodium_library NAMES sodium libsodium REQUIRED)
+    find_path(_stellar_sodium_include sodium.h REQUIRED)
+    add_library(stellar_sodium UNKNOWN IMPORTED)
+    set_target_properties(stellar_sodium PROPERTIES
+      IMPORTED_LOCATION "${_stellar_sodium_library}"
+      INTERFACE_INCLUDE_DIRECTORIES "${_stellar_sodium_include}")
+  endif()
 endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/StellarSdkTargets.cmake")
