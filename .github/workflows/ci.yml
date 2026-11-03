@@ -80,7 +80,9 @@ jobs:
       VCPKG_FORCE_SYSTEM_BINARIES: 1
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: >-
+          sudo apt-get update && sudo apt-get install -y
+          ninja-build autoconf autoconf-archive automake libtool
       - name: vcpkg install (overlay port)
         # --classic: the repo's root vcpkg.json would otherwise force manifest
         # mode, which rejects package-name arguments.
