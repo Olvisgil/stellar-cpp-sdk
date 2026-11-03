@@ -65,6 +65,13 @@ cmake --build --preset release
 cmake --install build/release --prefix /usr/local
 ```
 
+Or via the in-repo vcpkg overlay port (builds `main`; set
+`STELLAR_SDK_LOCAL_SOURCE` to a checkout to pin a specific tree):
+
+```sh
+vcpkg install stellar-cpp-sdk --overlay-ports=/path/to/stellar-cpp-sdk/ports
+```
+
 Then in your project:
 
 ```cmake

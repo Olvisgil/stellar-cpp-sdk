@@ -57,8 +57,22 @@ target_compile_options(stellar_xdr PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,Clang,App
 # ---------------------------------------------------------------------------
 # stellar::core — keys, strkeys, networks, numerics, addresses (libsodium private)
 # ---------------------------------------------------------------------------
-find_library(SODIUM_LIBRARY sodium REQUIRED)
-find_path(SODIUM_INCLUDE_DIR sodium.h REQUIRED)
+# libsodium: vcpkg ships it as unofficial-sodium; system installs are found by
+# path. Either way we normalize to the imported target `stellar_sodium`, which
+# StellarSdkConfig.cmake re-creates for consumers (static PRIVATE deps are
+# exported as $<LINK_ONLY:...>).
+find_package(unofficial-sodium CONFIG QUIET)
+if(TARGET unofficial-sodium::sodium)
+  add_library(stellar_sodium INTERFACE IMPORTED)
+  target_link_libraries(stellar_sodium INTERFACE unofficial-sodium::sodium)
+else()
+  find_library(SODIUM_LIBRARY NAMES sodium libsodium REQUIRED)
+  find_path(SODIUM_INCLUDE_DIR sodium.h REQUIRED)
+  add_library(stellar_sodium UNKNOWN IMPORTED)
+  set_target_properties(stellar_sodium PROPERTIES
+    IMPORTED_LOCATION "${SODIUM_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${SODIUM_INCLUDE_DIR}")
+endif()
 find_package(CURL REQUIRED)
 
 add_library(stellar_core STATIC
@@ -88,8 +102,7 @@ add_library(stellar_core STATIC
   src/tx/transaction.cpp
 )
 add_library(stellar::core ALIAS stellar_core)
-target_link_libraries(stellar_core PUBLIC stellar::xdr PRIVATE ${SODIUM_LIBRARY} CURL::libcurl)
-target_include_directories(stellar_core PRIVATE ${SODIUM_INCLUDE_DIR})
+target_link_libraries(stellar_core PUBLIC stellar::xdr PRIVATE stellar_sodium CURL::libcurl)
 target_compile_definitions(stellar_core PRIVATE STELLAR_SDK_BUILD)
 stellar_set_warnings(stellar_core)
 
@@ -158,6 +171,9 @@ include(CMakePackageConfigHelpers)
 
 set(_sdk_components base xdr core)
 foreach(comp IN LISTS _sdk_components)
+  # Installed names match the build-tree aliases (stellar::base, stellar::xdr,
+  # stellar::core) rather than stellar::stellar_<comp>.
+  set_target_properties(stellar_${comp} PROPERTIES EXPORT_NAME ${comp})
   install(TARGETS stellar_${comp}
           EXPORT StellarSdkTargets
           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -180,7 +196,7 @@ configure_package_config_file(
 
 write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/StellarSdkConfigVersion.cmake
-    VERSION 0.1.0
+    VERSION ${PROJECT_VERSION}
     COMPATIBILITY AnyNewerVersion)
 
 install(FILES

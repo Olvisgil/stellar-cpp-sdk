@@ -5,6 +5,7 @@
 - `include/stellar/xdr/generated/types.hpp` — GENERATED, do not edit by hand
 - `src/xdr/generated/*.cpp` — GENERATED codecs + registry
 - `xdr/` — pinned XDR inputs (`VERSION` records the commit/tag pins)
+- `ports/` — vcpkg overlay port (`STELLAR_SDK_LOCAL_SOURCE` builds a local checkout)
 - `tools/xdrgen/generate.py` — C++ generator (stdlib-only Python 3.10+)
 - `tools/update_xdr.py` — fetch/verify the pinned XDR inputs
 

@@ -5,8 +5,6 @@
   "dependencies": [
     "libsodium",
     "curl",
-    "nlohmann-json",
-    "tomlplusplus",
     "gtest"
   ]
 }

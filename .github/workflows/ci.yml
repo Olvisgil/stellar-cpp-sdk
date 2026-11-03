@@ -70,6 +70,39 @@ jobs:
       - name: Test
         run: ctest --preset ${{ matrix.preset }}
 
+  vcpkg-port:
+    # Build the overlay port in ports/ against this checkout (the portfile
+    # honors STELLAR_SDK_LOCAL_SOURCE), so PRs validate the same CMake
+    # install path consumers use.
+    runs-on: ubuntu-24.04
+    env:
+      STELLAR_SDK_LOCAL_SOURCE: ${{ github.workspace }}
+      VCPKG_FORCE_SYSTEM_BINARIES: 1
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - name: vcpkg install (overlay port)
+        run: >-
+          "$VCPKG_INSTALLATION_ROOT/vcpkg" install stellar-cpp-sdk
+          --overlay-ports="$PWD/ports" --triplet=x64-linux
+      - name: Consume installed port
+        run: |
+          mkdir -p /tmp/consumer && cd /tmp/consumer
+          cat > main.cpp <<'EOF'
+          #include <stellar/core/keypair.hpp>
+          int main() { return stellar::KeyPair::random().ok() ? 0 : 1; }
+          EOF
+          cat > CMakeLists.txt <<'EOF'
+          cmake_minimum_required(VERSION 3.24)
+          project(consumer CXX)
+          find_package(StellarSdk REQUIRED)
+          add_executable(consumer main.cpp)
+          target_link_libraries(consumer PRIVATE stellar::core)
+          EOF
+          cmake -B build -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-linux
+          cmake --build build
+          ./build/consumer
+
   dependency-review:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
