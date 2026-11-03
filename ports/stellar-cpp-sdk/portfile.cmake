@@ -1,16 +1,16 @@
 # Overlay port for stellar-cpp-sdk.
 #
 # CI and local development set STELLAR_SDK_LOCAL_SOURCE to a checked-out tree
-# so the port builds exactly the code under test. Once a release tag exists
-# that contains the port-ready CMake config, switch the else-branch to
-# vcpkg_from_github(REF "v${VERSION}" SHA512 ...) for registry submission.
+# so the port builds exactly the code under test; drop that branch when
+# submitting to the vcpkg registry.
 if(DEFINED ENV{STELLAR_SDK_LOCAL_SOURCE})
   set(SOURCE_PATH "$ENV{STELLAR_SDK_LOCAL_SOURCE}")
 else()
-  vcpkg_from_git(
+  vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    URL https://github.com/Olvisgil/stellar-cpp-sdk.git
-    REF main
+    REPO Olvisgil/stellar-cpp-sdk
+    REF "v${VERSION}"
+    SHA512 fe054c70fe297d5251f2cbcaa8a30633ba0b9a47c81c892c052dabf85c2c4840c1fbcf6d88a2f4f469bb98997a8d90f2a7440ae0ba8faaae60bfd0a7579473be
     HEAD_REF main
   )
 endif()
