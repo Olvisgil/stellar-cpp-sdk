@@ -15,6 +15,10 @@ else()
   )
 endif()
 
+# The SDK builds STATIC libraries only: generated XDR symbols carry no export
+# annotations and the build hides visibility by default.
+vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
+
 vcpkg_cmake_configure(
   SOURCE_PATH "${SOURCE_PATH}"
   OPTIONS
