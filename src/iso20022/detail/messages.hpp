@@ -58,7 +58,7 @@ void emit_amount(pugi::xml_node parent, const char* name, const CcyAmount& a);
 void emit_amount_if(pugi::xml_node parent, const char* name, const std::optional<CcyAmount>& a);
 void emit_orgnl_grp_inf(pugi::xml_node parent, const char* name, const OriginalGroupInfo& g);
 void emit_orgnl_tx_ref(pugi::xml_node parent, const OriginalTxRef& r);
-void emit_entry_tx(pugi::xml_node parent, const Entry& e);       // shared camt Ntry shape
+void emit_entry_tx(pugi::xml_node parent, const Entry& e);            // shared camt Ntry shape
 void emit_grp_hdr_base(pugi::xml_node parent, const GroupHeader& h);  // MsgId/CreDtTm prefix
 
 // TxInfAndSts shared by pacs.002 and pain.002 (defined in pacs002.cpp).
@@ -81,7 +81,7 @@ CcyAmount read_amount(pugi::xml_node n);
 void read_orgnl_grp_inf(pugi::xml_node n, OriginalGroupInfo& g, const std::string& path,
                         std::vector<std::string>& errs);
 void read_orgnl_tx_ref(pugi::xml_node n, OriginalTxRef& r);
-void read_entry_tx(pugi::xml_node parent, Entry& e);             // shared camt Ntry shape
+void read_entry_tx(pugi::xml_node parent, Entry& e);  // shared camt Ntry shape
 void read_grp_hdr_base(pugi::xml_node parent, GroupHeader& h, const std::string& path,
                        std::vector<std::string>& errs);
 
@@ -90,7 +90,7 @@ void read_grp_hdr_base(pugi::xml_node parent, GroupHeader& h, const std::string&
 // ---------------------------------------------------------------------------
 
 [[nodiscard]] std::string safe_truncate(std::string_view s, std::size_t n);
-[[nodiscard]] std::string normalize_amount5(std::string_view amt);   // truncate to 5dp
+[[nodiscard]] std::string normalize_amount5(std::string_view amt);  // truncate to 5dp
 [[nodiscard]] Result<std::string> decimal_sum(const std::vector<std::string>& amounts);
 [[nodiscard]] std::string uuid_v4(RandomSource& rng);
 [[nodiscard]] std::string format_isodate(std::int64_t unix_seconds);
@@ -106,7 +106,8 @@ void read_grp_hdr_base(pugi::xml_node parent, GroupHeader& h, const std::string&
 [[nodiscard]] Agent agent_or_fallback(std::string_view bic, std::string_view fallback_id);
 
 /// Party domain type → XSD structs (account precedence IBAN→Othr→Prxy).
-[[nodiscard]] PartyIdentification party_identification(const Party* p, std::string_view fallback_nm);
+[[nodiscard]] PartyIdentification party_identification(const Party* p,
+                                                       std::string_view fallback_nm);
 [[nodiscard]] std::optional<CashAccount> party_account(const Party* p);
 [[nodiscard]] RemittanceInfo remittance_info(const std::vector<std::string>& lines,
                                              const Payment& p);

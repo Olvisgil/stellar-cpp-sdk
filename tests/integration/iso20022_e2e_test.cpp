@@ -20,17 +20,15 @@
 #include "stellar/iso20022/xml.hpp"
 #include "stellar/util/clock.hpp"
 
-namespace stellar::iso20022 {
+using namespace stellar::v1;
+using namespace stellar::v1::iso20022;
+
 namespace {
 
-constexpr std::string_view kAnchor =
-    "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
-constexpr std::string_view kBob =
-    "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ";
-constexpr std::string_view kUsdcIssuer =
-    "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN";
-constexpr std::string_view kHash1 =
-    "e6e17cda8337d85e9c2b9540bd59fe8cec11d85e9c2b9540bd59fe8c";
+constexpr std::string_view kAnchor = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
+constexpr std::string_view kBob = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ";
+constexpr std::string_view kUsdcIssuer = "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN";
+constexpr std::string_view kHash1 = "e6e17cda8337d85e9c2b9540bd59fe8cec11d85e9c2b9540bd59fe8c";
 constexpr std::string_view kHash2 =
     "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90";
 
@@ -194,4 +192,3 @@ TEST(Iso20022E2E, DisbursementLifecycle) {
 }
 
 }  // namespace
-}  // namespace stellar::iso20022

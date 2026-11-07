@@ -58,7 +58,10 @@ cmake --preset dev && cmake --build --preset dev && ctest --preset dev
 ```
 
 Requires CMake ≥ 3.24 and a C++20 compiler (GCC 11+, Clang 14+,
-AppleClang 14+, MSVC 2022+). `vcpkg.json` pins libsodium + libcurl.
+AppleClang 14+, MSVC 2022+). `vcpkg.json` pins libsodium + libcurl + pugixml.
+Without vcpkg, install `libsodium-dev libcurl4-openssl-dev libpugixml-dev`
+(apt) or `brew install libsodium curl pugixml`; the ISO 20022 component can
+also be turned off with `-DSTELLAR_SDK_ENABLE_ISO20022=OFF`.
 
 Other presets: `release`, `asan-ubsan`, `tsan`, `fuzz`, `msvc`.
 

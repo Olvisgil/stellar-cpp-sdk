@@ -40,7 +40,7 @@ Result<Pain002> read_pain002(pugi::xml_node doc) {
   auto root = doc.child("CstmrPmtStsRpt");
   if (!root) {
     return Error{ErrorCode::kProtocolError,
-            std::string("pain.002: missing CstmrPmtStsRpt element")};
+                 std::string("pain.002: missing CstmrPmtStsRpt element")};
   }
   std::vector<std::string> errs;
   Pain002 m;

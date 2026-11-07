@@ -18,15 +18,15 @@
 
 namespace stellar::inline v1::iso20022 {
 
-[[nodiscard]] STELLAR_API bool is_bic(std::string_view s) noexcept;    // ISO 9362 BICFI
-[[nodiscard]] STELLAR_API bool is_iban(std::string_view s) noexcept;   // ISO 13616 + mod-97
+[[nodiscard]] STELLAR_API bool is_bic(std::string_view s) noexcept;   // ISO 9362 BICFI
+[[nodiscard]] STELLAR_API bool is_iban(std::string_view s) noexcept;  // ISO 13616 + mod-97
 [[nodiscard]] STELLAR_API bool is_iso4217(std::string_view s) noexcept;
 [[nodiscard]] STELLAR_API bool is_iso3166(std::string_view s) noexcept;  // alpha-2 country
 [[nodiscard]] STELLAR_API bool is_lei(std::string_view s) noexcept;
-[[nodiscard]] STELLAR_API bool is_uetr(std::string_view s) noexcept;   // UUIDv4 format
+[[nodiscard]] STELLAR_API bool is_uetr(std::string_view s) noexcept;  // UUIDv4 format
 
 struct ValidationIssue {
-  std::string path;     // e.g. "CdtTrfTxInf[0]/DbtrAgt/FinInstnId/BICFI"
+  std::string path;  // e.g. "CdtTrfTxInf[0]/DbtrAgt/FinInstnId/BICFI"
   std::string message;
   bool operator==(const ValidationIssue&) const = default;
 };

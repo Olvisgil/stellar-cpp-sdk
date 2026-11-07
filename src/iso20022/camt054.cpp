@@ -34,7 +34,7 @@ Result<Camt054> read_camt054(pugi::xml_node doc) {
   auto root = doc.child("BkToCstmrDbtCdtNtfctn");
   if (!root) {
     return Error{ErrorCode::kProtocolError,
-            std::string("camt.054: missing BkToCstmrDbtCdtNtfctn element")};
+                 std::string("camt.054: missing BkToCstmrDbtCdtNtfctn element")};
   }
   std::vector<std::string> errs;
   Camt054 m;

@@ -67,8 +67,7 @@ void emit_camt053(pugi::xml_node doc, const Camt053& m) {
 Result<Camt053> read_camt053(pugi::xml_node doc) {
   auto root = doc.child("BkToCstmrStmt");
   if (!root) {
-    return Error{ErrorCode::kProtocolError,
-            std::string("camt.053: missing BkToCstmrStmt element")};
+    return Error{ErrorCode::kProtocolError, std::string("camt.053: missing BkToCstmrStmt element")};
   }
   std::vector<std::string> errs;
   Camt053 m;

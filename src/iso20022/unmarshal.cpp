@@ -19,27 +19,27 @@ Result<void> reject_dtd(std::string_view xml) {
   std::string lower(head.size(), '\0');
   for (std::size_t i = 0; i < head.size(); ++i)
     lower[i] = static_cast<char>(std::tolower(static_cast<unsigned char>(head[i])));
-  if (lower.find("<!doctype") != std::string::npos ||
-      lower.find("<!entity") != std::string::npos) {
+  if (lower.find("<!doctype") != std::string::npos || lower.find("<!entity") != std::string::npos) {
     return Error{ErrorCode::kProtocolError,
-            std::string("iso20022: DOCTYPE/ENTITY declarations are not supported")};
+                 std::string("iso20022: DOCTYPE/ENTITY declarations are not supported")};
   }
   return {};
 }
 
 Result<pugi::xml_node> load_document(std::string_view xml, pugi::xml_document& out) {
   STELLAR_TRY(reject_dtd(xml));
-  const auto res = out.load_buffer(xml.data(), xml.size(),
-                                   pugi::parse_default | pugi::parse_trim_pcdata);
+  const auto res =
+      out.load_buffer(xml.data(), xml.size(), pugi::parse_default | pugi::parse_trim_pcdata);
   if (!res) {
-    return Error{ErrorCode::kProtocolError,
-            std::string("iso20022: XML parse failed at offset ") +
-                std::to_string(res.offset) + ": " + res.description()};
+    return Error{ErrorCode::kProtocolError, std::string("iso20022: XML parse failed at offset ") +
+                                                std::to_string(res.offset) + ": " +
+                                                res.description()};
   }
   auto doc = out.child("Document");
   if (!doc) {
-    return Error{ErrorCode::kProtocolError,
-            std::string("iso20022: not an ISO 20022 document (root element is not <Document>)")};
+    return Error{
+        ErrorCode::kProtocolError,
+        std::string("iso20022: not an ISO 20022 document (root element is not <Document>)")};
   }
   return doc;
 }
@@ -61,8 +61,8 @@ Result<MessageKind> detect_message_type(std::string_view xml) {
   const std::string_view ns = doc.attribute("xmlns").value();
   if (auto k = kind_for_namespace(ns)) return *k;
   return Error{ErrorCode::kProtocolError,
-          std::string("iso20022: unrecognized or unsupported ISO 20022 namespace \"") +
-              std::string(ns) + "\""};
+               std::string("iso20022: unrecognized or unsupported ISO 20022 namespace \"") +
+                   std::string(ns) + "\""};
 }
 
 Result<Document> parse(std::string_view xml) {
@@ -72,8 +72,8 @@ Result<Document> parse(std::string_view xml) {
   const auto kind = kind_for_namespace(ns);
   if (!kind) {
     return Error{ErrorCode::kProtocolError,
-            std::string("iso20022: unrecognized or unsupported ISO 20022 namespace \"") +
-                std::string(ns) + "\""};
+                 std::string("iso20022: unrecognized or unsupported ISO 20022 namespace \"") +
+                     std::string(ns) + "\""};
   }
   switch (*kind) {
     case MessageKind::kPacs008: {

@@ -45,51 +45,42 @@ namespace stellar::inline v1::iso20022 {
 // Builders (Payment → XML)
 // ---------------------------------------------------------------------------
 
-[[nodiscard]] STELLAR_API Result<std::string> build_pacs008(
-    const Payment& payment, const TransferOptions& opts = {},
-    const Clock& clock = default_clock());
+[[nodiscard]] STELLAR_API Result<std::string> build_pacs008(const Payment& payment,
+                                                            const TransferOptions& opts = {},
+                                                            const Clock& clock = default_clock());
 [[nodiscard]] STELLAR_API Result<std::string> build_pacs008_batch(
-    std::span<const CreditTransferInstruction> instructions,
-    const TransferBatchOptions& opts = {},
+    std::span<const CreditTransferInstruction> instructions, const TransferBatchOptions& opts = {},
     const Clock& clock = default_clock());
 
 [[nodiscard]] STELLAR_API Result<std::string> build_pain001(
-    std::span<const CreditTransferInstruction> instructions,
-    const TransferBatchOptions& opts = {},
+    std::span<const CreditTransferInstruction> instructions, const TransferBatchOptions& opts = {},
     const Clock& clock = default_clock());
 
 /// One TxInfAndSts per instruction: `tx_status` maps to TxSts
 /// (default ACSC when unset), `tx_reason` to StsRsnInf.
 [[nodiscard]] STELLAR_API Result<std::string> build_pacs002(
-    std::span<const CreditTransferInstruction> instructions,
-    const StatusReportOptions& opts = {},
+    std::span<const CreditTransferInstruction> instructions, const StatusReportOptions& opts = {},
     const Clock& clock = default_clock());
 
 /// pain.002 is the customer-side twin of pacs.002.
 [[nodiscard]] STELLAR_API Result<std::string> build_pain002(
-    std::span<const CreditTransferInstruction> instructions,
-    const StatusReportOptions& opts = {},
+    std::span<const CreditTransferInstruction> instructions, const StatusReportOptions& opts = {},
     const Clock& clock = default_clock());
 
 /// Payment return for previously-sent instructions.
 [[nodiscard]] STELLAR_API Result<std::string> build_pacs004(
-    std::span<const CreditTransferInstruction> instructions,
-    const TransferBatchOptions& opts = {},
+    std::span<const CreditTransferInstruction> instructions, const TransferBatchOptions& opts = {},
     const Clock& clock = default_clock());
 
 /// A statement entry per payment: Amt/CdtDbtInd (CRDT when `to` == acct
 /// owner), BookgDt/ValDt from `created_at`, TxDtls refs from ids/hash.
 /// `account` is the account the statement reports on.
 [[nodiscard]] STELLAR_API Result<std::string> build_camt053(
-    const CashAccount& account,
-    std::span<const CreditTransferInstruction> instructions,
-    const StatementOptions& opts = {},
-    const Clock& clock = default_clock());
+    const CashAccount& account, std::span<const CreditTransferInstruction> instructions,
+    const StatementOptions& opts = {}, const Clock& clock = default_clock());
 [[nodiscard]] STELLAR_API Result<std::string> build_camt054(
-    const CashAccount& account,
-    std::span<const CreditTransferInstruction> instructions,
-    const StatementOptions& opts = {},
-    const Clock& clock = default_clock());
+    const CashAccount& account, std::span<const CreditTransferInstruction> instructions,
+    const StatementOptions& opts = {}, const Clock& clock = default_clock());
 
 // ---------------------------------------------------------------------------
 // Readers (XML/Document → domain view)

@@ -651,9 +651,9 @@ std::string uuid_v4(RandomSource& rng) {
   b[8] = static_cast<std::uint8_t>((b[8] & 0x3F) | 0x80);
   char out[37];
   std::snprintf(out, sizeof(out),
-                "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-                b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11],
-                b[12], b[13], b[14], b[15]);
+                "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", b[0], b[1],
+                b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14],
+                b[15]);
   return std::string(out, 36);
 }
 
@@ -746,8 +746,8 @@ std::optional<CashAccount> party_account(const Party* p) {
   } else if (!p->acct_id.empty() && p->acct_id.size() <= 34) {
     a.id = AccountId{{}, GenericId{p->acct_id, {}, {}, {}}};
   } else if (!p->acct_id.empty() || !p->acct_proxy_id.empty()) {
-    a.prxy = ProxyAccount{p->acct_proxy_type,
-                          p->acct_proxy_id.empty() ? p->acct_id : p->acct_proxy_id};
+    a.prxy =
+        ProxyAccount{p->acct_proxy_type, p->acct_proxy_id.empty() ? p->acct_id : p->acct_proxy_id};
   } else {
     return std::nullopt;
   }

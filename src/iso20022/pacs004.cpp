@@ -77,8 +77,7 @@ Result<Pacs004> read_pacs004(pugi::xml_node doc) {
     if (auto b = h.child("BtchBookg")) m.grp_hdr.btch_bookg = opt_text(b).value_or("") == "true";
     m.grp_hdr.nb_of_txs = child_text(h, "NbOfTxs");
     m.grp_hdr.ctrl_sum = child_text(h, "CtrlSum");
-    if (auto a = h.child("TtlRtrdIntrBkSttlmAmt"))
-      m.grp_hdr.ttl_intrbk_sttlm_amt = read_amount(a);
+    if (auto a = h.child("TtlRtrdIntrBkSttlmAmt")) m.grp_hdr.ttl_intrbk_sttlm_amt = read_amount(a);
     m.grp_hdr.intrbk_sttlm_dt = child_text(h, "IntrBkSttlmDt");
     if (auto s = h.child("SttlmInf"))
       m.grp_hdr.sttlm_inf = SettlementInstruction{child_text(s, "SttlmMtd")};

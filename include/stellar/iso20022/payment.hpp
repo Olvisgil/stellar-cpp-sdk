@@ -40,8 +40,8 @@ struct Payment {
   Amount amount;
   Memo memo = Memo::none();
 
-  std::string id;       // caller-side payment reference (InstrId/TxId default)
-  std::string tx_hash;  // hex ledger tx hash → EndToEndId
+  std::string id;               // caller-side payment reference (InstrId/TxId default)
+  std::string tx_hash;          // hex ledger tx hash → EndToEndId
   std::int64_t created_at = 0;  // unix seconds; 0 → builder uses its clock
 
   bool operator==(const Payment&) const = default;
@@ -91,9 +91,9 @@ struct CreditTransferInstruction {
 
 /// Shared option fields for credit-transfer documents.
 struct TransferOptions {
-  std::string instg_bic, instd_bic;    // GrpHdr-level agents
-  std::string dbtr_bic, cdtr_bic;      // party agents when Party::agent_bic unset
-  std::string dbtr_name, cdtr_name;    // overrides (else truncated addresses)
+  std::string instg_bic, instd_bic;  // GrpHdr-level agents
+  std::string dbtr_bic, cdtr_bic;    // party agents when Party::agent_bic unset
+  std::string dbtr_name, cdtr_name;  // overrides (else truncated addresses)
   std::optional<PostalAddress> dbtr_address, cdtr_address;
   std::string dbtr_acct_iban, cdtr_acct_iban;
   std::string charge_bearer = "SHAR";  // DEBT|CRED|SHAR|SLEV
@@ -107,9 +107,9 @@ struct TransferOptions {
 struct TransferBatchOptions {
   TransferOptions tx;
   std::optional<bool> batch_booking;
-  std::optional<Party> debtor;       // batch-level debtor default
-  std::string cre_dt_tm;             // RFC3339; default = first payment's date
-  std::string reqd_exctn_dt;         // pain.001 only; default = that date
+  std::optional<Party> debtor;                     // batch-level debtor default
+  std::string cre_dt_tm;                           // RFC3339; default = first payment's date
+  std::string reqd_exctn_dt;                       // pain.001 only; default = that date
   std::string initg_pty_name = "stellar-cpp-sdk";  // pain.001 InitgPty (mandatory)
 };
 
@@ -161,8 +161,8 @@ struct ReconciliationSummary {
 /// EndToEndId, then InstrId, then TxId (the identifiers the builders emit).
 /// Last report for an instruction wins; reports referencing payments outside
 /// the batch land in `unmatched`.
-[[nodiscard]] STELLAR_API ReconciliationSummary reconcile_instructions(
-    const std::vector<CreditTransferInstruction>& instructions,
-    const std::vector<StatusReport>& reports);
+[[nodiscard]] STELLAR_API ReconciliationSummary
+reconcile_instructions(const std::vector<CreditTransferInstruction>& instructions,
+                       const std::vector<StatusReport>& reports);
 
 }  // namespace stellar::inline v1::iso20022

@@ -36,7 +36,8 @@ struct CcyAmount {
 
 /// PostalAddress27 subset.
 struct PostalAddress {
-  std::string strt_nm, bldg_nb, bldg_nm, flr, pst_cd, twn_nm, twn_lctn_nm, dstrct_nm, ctry_sub_dvsn, ctry;
+  std::string strt_nm, bldg_nb, bldg_nm, flr, pst_cd, twn_nm, twn_lctn_nm, dstrct_nm, ctry_sub_dvsn,
+      ctry;
   std::vector<std::string> adr_line;
   bool operator==(const PostalAddress&) const = default;
 };
@@ -383,7 +384,8 @@ struct Pain002 {
 
 /// TransactionReferences10 subset.
 struct EntryRefs {
-  std::string msg_id, acct_svcr_ref, pmt_inf_id, instr_id, end_to_end_id, uetr, tx_id, rtr_id, clr_sys_ref;
+  std::string msg_id, acct_svcr_ref, pmt_inf_id, instr_id, end_to_end_id, uetr, tx_id, rtr_id,
+      clr_sys_ref;
   bool operator==(const EntryRefs&) const = default;
 };
 
@@ -410,10 +412,10 @@ struct EntryTxDetails {
 /// Prtry code when the caller doesn't supply one.
 struct Entry {
   std::string ntry_ref;
-  CcyAmount amt;          // required
-  std::string cdt_dbt_ind;  // required: "CRDT" | "DBIT"
-  std::string rvsl_ind;   // "true"/"false"
-  std::string sts;        // required: e.g. "BOOK"
+  CcyAmount amt;                 // required
+  std::string cdt_dbt_ind;       // required: "CRDT" | "DBIT"
+  std::string rvsl_ind;          // "true"/"false"
+  std::string sts;               // required: e.g. "BOOK"
   std::string bookg_dt, val_dt;  // ISO dates or datetimes
   std::string acct_svcr_ref;
   std::string bk_tx_cd_prtry, bk_tx_cd_issr;
@@ -472,7 +474,13 @@ struct Camt054 {
 // ---------------------------------------------------------------------------
 
 enum class MessageKind {
-  kPacs008, kPacs002, kPacs004, kPain001, kPain002, kCamt053, kCamt054,
+  kPacs008,
+  kPacs002,
+  kPacs004,
+  kPain001,
+  kPain002,
+  kCamt053,
+  kCamt054,
 };
 
 using Document = std::variant<Pacs008, Pacs002, Pacs004, Pain001, Pain002, Camt053, Camt054>;

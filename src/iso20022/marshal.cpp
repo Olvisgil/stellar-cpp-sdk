@@ -10,27 +10,36 @@
 namespace stellar::inline v1::iso20022 {
 
 MessageKind message_kind(const Document& d) noexcept {
-  return std::visit([](const auto& m) -> MessageKind {
-    using T = std::decay_t<decltype(m)>;
-    if constexpr (std::is_same_v<T, Pacs008>) return MessageKind::kPacs008;
-    if constexpr (std::is_same_v<T, Pacs002>) return MessageKind::kPacs002;
-    if constexpr (std::is_same_v<T, Pacs004>) return MessageKind::kPacs004;
-    if constexpr (std::is_same_v<T, Pain001>) return MessageKind::kPain001;
-    if constexpr (std::is_same_v<T, Pain002>) return MessageKind::kPain002;
-    if constexpr (std::is_same_v<T, Camt053>) return MessageKind::kCamt053;
-    return MessageKind::kCamt054;
-  }, d);
+  return std::visit(
+      [](const auto& m) -> MessageKind {
+        using T = std::decay_t<decltype(m)>;
+        if constexpr (std::is_same_v<T, Pacs008>) return MessageKind::kPacs008;
+        if constexpr (std::is_same_v<T, Pacs002>) return MessageKind::kPacs002;
+        if constexpr (std::is_same_v<T, Pacs004>) return MessageKind::kPacs004;
+        if constexpr (std::is_same_v<T, Pain001>) return MessageKind::kPain001;
+        if constexpr (std::is_same_v<T, Pain002>) return MessageKind::kPain002;
+        if constexpr (std::is_same_v<T, Camt053>) return MessageKind::kCamt053;
+        return MessageKind::kCamt054;
+      },
+      d);
 }
 
 std::string_view message_id(MessageKind k) noexcept {
   switch (k) {
-    case MessageKind::kPacs008: return "pacs.008.001.14";
-    case MessageKind::kPacs002: return "pacs.002.001.16";
-    case MessageKind::kPacs004: return "pacs.004.001.15";
-    case MessageKind::kPain001: return "pain.001.001.13";
-    case MessageKind::kPain002: return "pain.002.001.15";
-    case MessageKind::kCamt053: return "camt.053.001.14";
-    case MessageKind::kCamt054: return "camt.054.001.14";
+    case MessageKind::kPacs008:
+      return "pacs.008.001.14";
+    case MessageKind::kPacs002:
+      return "pacs.002.001.16";
+    case MessageKind::kPacs004:
+      return "pacs.004.001.15";
+    case MessageKind::kPain001:
+      return "pain.001.001.13";
+    case MessageKind::kPain002:
+      return "pain.002.001.15";
+    case MessageKind::kCamt053:
+      return "camt.053.001.14";
+    case MessageKind::kCamt054:
+      return "camt.054.001.14";
   }
   return {};
 }
@@ -85,16 +94,18 @@ Result<std::string> to_xml(const Document& doc) {
   const std::string ns(message_namespace(kind));
   root.append_attribute("xmlns") = ns.c_str();
 
-  std::visit([root](const auto& m) {
-    using T = std::decay_t<decltype(m)>;
-    if constexpr (std::is_same_v<T, Pacs008>) detail::emit_pacs008(root, m);
-    if constexpr (std::is_same_v<T, Pacs002>) detail::emit_pacs002(root, m);
-    if constexpr (std::is_same_v<T, Pacs004>) detail::emit_pacs004(root, m);
-    if constexpr (std::is_same_v<T, Pain001>) detail::emit_pain001(root, m);
-    if constexpr (std::is_same_v<T, Pain002>) detail::emit_pain002(root, m);
-    if constexpr (std::is_same_v<T, Camt053>) detail::emit_camt053(root, m);
-    if constexpr (std::is_same_v<T, Camt054>) detail::emit_camt054(root, m);
-  }, doc);
+  std::visit(
+      [root](const auto& m) {
+        using T = std::decay_t<decltype(m)>;
+        if constexpr (std::is_same_v<T, Pacs008>) detail::emit_pacs008(root, m);
+        if constexpr (std::is_same_v<T, Pacs002>) detail::emit_pacs002(root, m);
+        if constexpr (std::is_same_v<T, Pacs004>) detail::emit_pacs004(root, m);
+        if constexpr (std::is_same_v<T, Pain001>) detail::emit_pain001(root, m);
+        if constexpr (std::is_same_v<T, Pain002>) detail::emit_pain002(root, m);
+        if constexpr (std::is_same_v<T, Camt053>) detail::emit_camt053(root, m);
+        if constexpr (std::is_same_v<T, Camt054>) detail::emit_camt054(root, m);
+      },
+      doc);
 
   std::ostringstream oss;
   d.save(oss, "  ", pugi::format_default, pugi::encoding_utf8);

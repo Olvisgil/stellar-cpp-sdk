@@ -46,10 +46,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y clang
       - name: Install libsodium (ubuntu)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libsodium-dev libcurl4-openssl-dev
+        run: sudo apt-get update && sudo apt-get install -y libsodium-dev libcurl4-openssl-dev libpugixml-dev
       - name: Install libsodium (macos)
         if: runner.os == 'macOS'
-        run: brew install libsodium curl
+        run: brew install libsodium curl pugixml
       - name: Configure (windows, vcpkg manifest)
         if: runner.os == 'Windows'
         run: >-

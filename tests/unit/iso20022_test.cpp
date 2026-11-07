@@ -16,17 +16,15 @@
 #include <fstream>
 #include <sstream>
 
-namespace stellar::iso20022 {
+using namespace stellar::v1;
+using namespace stellar::v1::iso20022;
+
 namespace {
 
-constexpr std::string_view kAlice =
-    "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
-constexpr std::string_view kBob =
-    "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ";
-constexpr std::string_view kUsdcIssuer =
-    "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN";
-constexpr std::string_view kTxHash =
-    "e6e17cda8337d85e9c2b9540bd59fe8cec11d85e9c2b9540bd59fe8c";
+constexpr std::string_view kAlice = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
+constexpr std::string_view kBob = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ";
+constexpr std::string_view kUsdcIssuer = "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN";
+constexpr std::string_view kTxHash = "e6e17cda8337d85e9c2b9540bd59fe8cec11d85e9c2b9540bd59fe8c";
 
 std::string fixture(const char* name) {
   std::ifstream f(std::string(STELLAR_ISO20022_FIXTURES_DIR) + "/" + name);
@@ -36,7 +34,9 @@ std::string fixture(const char* name) {
   return ss.str();
 }
 
-Address addr(std::string_view s) { return Address::parse(s).value(); }
+Address addr(std::string_view s) {
+  return Address::parse(s).value();
+}
 
 Payment make_payment() {
   Payment p;
@@ -113,10 +113,15 @@ TEST(Iso20022Parse, RoundTripPreservesDocument) {
 }
 
 TEST(Iso20022Parse, RejectsDoctypeAndBadNamespace) {
-  EXPECT_FALSE(parse("<!DOCTYPE x><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.14\"/>").ok());
+  EXPECT_FALSE(
+      parse("<!DOCTYPE x><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.14\"/>")
+          .ok());
   EXPECT_FALSE(parse("<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08\"/>").ok());
   EXPECT_FALSE(parse("<NotADocument/>").ok());
-  auto r = parse("<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.14\"><FIToFICstmrCdtTrf><CdtTrfTxInf/></FIToFICstmrCdtTrf></Document>");
+  auto r = parse(
+      "<Document "
+      "xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.14\"><FIToFICstmrCdtTrf><CdtTrfTxInf/></"
+      "FIToFICstmrCdtTrf></Document>");
   ASSERT_FALSE(r.ok());
   EXPECT_NE(r.error().message().find("GrpHdr"), std::string::npos);
   EXPECT_NE(r.error().message().find("PmtId"), std::string::npos);
@@ -156,7 +161,9 @@ TEST(Iso20022Build, Pacs008SinglePaymentConventions) {
   EXPECT_EQ(p8.txs.front().splmtry_assets[0].cd, "USDC");
 
   auto rep = validate(*doc);
-  EXPECT_TRUE(rep.valid()) << (rep.issues.empty() ? "" : rep.issues[0].path + ": " + rep.issues[0].message);
+  EXPECT_TRUE(rep.valid()) << (rep.issues.empty()
+                                   ? ""
+                                   : rep.issues[0].path + ": " + rep.issues[0].message);
 }
 
 TEST(Iso20022Build, Pacs008BatchTotals) {
@@ -287,7 +294,7 @@ TEST(Iso20022Validate, ReportCollectsIssues) {
   bad.grp_hdr.nb_of_txs = "1";
   bad.grp_hdr.sttlm_inf = SettlementInstruction{"CLRG"};
   CreditTransferTx t;
-  t.pmt_id.end_to_end_id = "";  // missing → issue
+  t.pmt_id.end_to_end_id = "";                // missing → issue
   t.intrbk_sttlm_amt = {"USDC", "1.123456"};  // bad ccy + too many digits
   bad.txs.push_back(t);
   const auto rep = validate(Document{bad});
@@ -297,4 +304,3 @@ TEST(Iso20022Validate, ReportCollectsIssues) {
 }
 
 }  // namespace
-}  // namespace stellar::iso20022

@@ -29,8 +29,7 @@ void emit_sts_rsn_inf(pugi::xml_node parent, const StatusReasonInfo& r) {
   for (const auto& l : r.addtl_inf) add_el(n, "AddtlInf", l);
 }
 
-void emit_tx_sts(pugi::xml_node parent, const PaymentTxStatus& t,
-                 bool with_orgnl_tx_id = true) {
+void emit_tx_sts(pugi::xml_node parent, const PaymentTxStatus& t, bool with_orgnl_tx_id = true) {
   auto n = parent.append_child("TxInfAndSts");
   add_el_if(n, "StsId", t.sts_id);
   if (t.orgnl_grp_inf) emit_orgnl_grp_inf(n, "OrgnlGrpInf", *t.orgnl_grp_inf);
@@ -97,7 +96,7 @@ Result<Pacs002> read_pacs002(pugi::xml_node doc) {
   auto root = doc.child("FIToFIPmtStsRpt");
   if (!root) {
     return Error{ErrorCode::kProtocolError,
-            std::string("pacs.002: missing FIToFIPmtStsRpt element")};
+                 std::string("pacs.002: missing FIToFIPmtStsRpt element")};
   }
   std::vector<std::string> errs;
   Pacs002 m;
@@ -129,10 +128,14 @@ Result<Pacs002> read_pacs002(pugi::xml_node doc) {
 }
 
 // Shared by pain.002 (same TxInfAndSts shape minus OrgnlTxId).
-void emit_pacs002_tx_sts(pugi::xml_node parent, const PaymentTxStatus& t) { emit_tx_sts(parent, t); }
+void emit_pacs002_tx_sts(pugi::xml_node parent, const PaymentTxStatus& t) {
+  emit_tx_sts(parent, t);
+}
 void emit_pain002_tx_sts(pugi::xml_node parent, const PaymentTxStatus& t) {
   emit_tx_sts(parent, t, false);
 }
-void read_pacs002_tx_sts(pugi::xml_node n, PaymentTxStatus& t) { read_tx_sts(n, t); }
+void read_pacs002_tx_sts(pugi::xml_node n, PaymentTxStatus& t) {
+  read_tx_sts(n, t);
+}
 
 }  // namespace stellar::inline v1::iso20022::detail

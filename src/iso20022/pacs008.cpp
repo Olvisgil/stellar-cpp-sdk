@@ -113,7 +113,7 @@ Result<Pacs008> read_pacs008(pugi::xml_node doc) {
   auto root = doc.child("FIToFICstmrCdtTrf");
   if (!root) {
     return Error{ErrorCode::kProtocolError,
-            std::string("pacs.008: missing FIToFICstmrCdtTrf element")};
+                 std::string("pacs.008: missing FIToFICstmrCdtTrf element")};
   }
   std::vector<std::string> errs;
   Pacs008 m;

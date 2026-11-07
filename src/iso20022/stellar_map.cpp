@@ -18,11 +18,16 @@ const Clock& default_clock() {
 
 std::string_view transaction_status_code(TransactionStatus s) noexcept {
   switch (s) {
-    case TransactionStatus::kACSC: return "ACSC";
-    case TransactionStatus::kACCP: return "ACCP";
-    case TransactionStatus::kACSP: return "ACSP";
-    case TransactionStatus::kRJCT: return "RJCT";
-    case TransactionStatus::kPDNG: return "PDNG";
+    case TransactionStatus::kACSC:
+      return "ACSC";
+    case TransactionStatus::kACCP:
+      return "ACCP";
+    case TransactionStatus::kACSP:
+      return "ACSP";
+    case TransactionStatus::kRJCT:
+      return "RJCT";
+    case TransactionStatus::kPDNG:
+      return "PDNG";
   }
   return {};
 }
@@ -105,8 +110,7 @@ void recover_remittance(const RemittanceInfo& rmt, CreditTransferInstruction& in
 
 Result<void> require_parties(const Payment& p, const std::string& what) {
   if (!p.from || !p.to) {
-    return Error::invalid_argument(what +
-                                   ": payment requires from/to Stellar addresses");
+    return Error::invalid_argument(what + ": payment requires from/to Stellar addresses");
   }
   return {};
 }
@@ -125,9 +129,9 @@ ResolvedParties resolve_parties(const CreditTransferInstruction& in,
   return r;
 }
 
-CreditTransferTx pacs008_tx(const CreditTransferInstruction& in,
-                            const TransferBatchOptions& opts, std::string_view tx_id,
-                            std::string_view uetr, std::string_view sttlm_dt) {
+CreditTransferTx pacs008_tx(const CreditTransferInstruction& in, const TransferBatchOptions& opts,
+                            std::string_view tx_id, std::string_view uetr,
+                            std::string_view sttlm_dt) {
   const Payment& p = in.payment;
   const auto parties = resolve_parties(in, opts);
   const TransferOptions& o = opts.tx;
@@ -162,10 +166,10 @@ CreditTransferTx pacs008_tx(const CreditTransferInstruction& in,
   } else {
     t.dbtr_acct = stellar_acct(*p.from);
   }
-  t.dbtr_agt = parties.debtor && !parties.debtor->agent_bic.empty()
-                   ? detail::agent_by_bic(parties.debtor->agent_bic)
-                   : detail::agent_or_fallback(o.dbtr_bic,
-                                               detail::safe_truncate(p.from->to_string(), 35));
+  t.dbtr_agt =
+      parties.debtor && !parties.debtor->agent_bic.empty()
+          ? detail::agent_by_bic(parties.debtor->agent_bic)
+          : detail::agent_or_fallback(o.dbtr_bic, detail::safe_truncate(p.from->to_string(), 35));
 
   const std::string cdtr_nm =
       !o.cdtr_name.empty() ? o.cdtr_name : detail::safe_truncate(p.to->to_string(), 16);
@@ -173,10 +177,10 @@ CreditTransferTx pacs008_tx(const CreditTransferInstruction& in,
   if (o.cdtr_address && (!parties.creditor || !parties.creditor->address)) {
     t.cdtr.pstl_adr = o.cdtr_address;
   }
-  t.cdtr_agt = parties.creditor && !parties.creditor->agent_bic.empty()
-                   ? detail::agent_by_bic(parties.creditor->agent_bic)
-                   : detail::agent_or_fallback(o.cdtr_bic,
-                                               detail::safe_truncate(p.to->to_string(), 35));
+  t.cdtr_agt =
+      parties.creditor && !parties.creditor->agent_bic.empty()
+          ? detail::agent_by_bic(parties.creditor->agent_bic)
+          : detail::agent_or_fallback(o.cdtr_bic, detail::safe_truncate(p.to->to_string(), 35));
   if (auto acct = detail::party_account(parties.creditor)) {
     t.cdtr_acct = std::move(acct);
   } else if (!o.cdtr_acct_iban.empty()) {
@@ -201,8 +205,7 @@ Result<PaymentTxStatus> status_tx(const CreditTransferInstruction& in,
   t.orgnl_instr_id = detail::safe_truncate(p.id, 35);
   t.orgnl_end_to_end_id = detail::end_to_end_id(p);
   t.orgnl_tx_id = detail::safe_truncate(p.id, 35);
-  t.tx_sts = std::string(transaction_status_code(
-      in.tx_status.value_or(TransactionStatus::kACSC)));
+  t.tx_sts = std::string(transaction_status_code(in.tx_status.value_or(TransactionStatus::kACSC)));
   if (!in.tx_reason.empty()) {
     StatusReasonInfo r;
     r.rsn_prtry = detail::safe_truncate(in.tx_reason, 35);
@@ -352,8 +355,8 @@ Result<std::string> build_pain001(std::span<const CreditTransferInstruction> ins
   const auto parties = resolve_parties(instrs.front(), opts);
   const TransferOptions& o = opts.tx;
   pi.dbtr = detail::party_identification(
-      parties.debtor, !o.dbtr_name.empty() ? o.dbtr_name
-                                         : detail::safe_truncate(first.from->to_string(), 140));
+      parties.debtor,
+      !o.dbtr_name.empty() ? o.dbtr_name : detail::safe_truncate(first.from->to_string(), 140));
   if (auto acct = detail::party_account(parties.debtor)) {
     pi.dbtr_acct = std::move(*acct);
   } else if (!o.dbtr_acct_iban.empty()) {
@@ -370,8 +373,8 @@ Result<std::string> build_pain001(std::span<const CreditTransferInstruction> ins
   amounts.reserve(instrs.size());
   for (const auto& in : instrs) {
     const Payment& p = in.payment;
-    const auto [ccy, suppl] =
-        detail::settlement_currency(detail::payment_asset(p), p.asset.issuer(), p.amount.to_string());
+    const auto [ccy, suppl] = detail::settlement_currency(detail::payment_asset(p),
+                                                          p.asset.issuer(), p.amount.to_string());
     PainTransferTx t;
     t.pmt_id.instr_id = o.instr_id.empty() ? detail::safe_truncate(p.id, 35) : o.instr_id;
     t.pmt_id.end_to_end_id = detail::end_to_end_id(p);
@@ -419,8 +422,8 @@ Result<std::string> build_pacs002(std::span<const CreditTransferInstruction> ins
                                   const StatusReportOptions& opts, const Clock& clock) {
   if (instrs.empty()) return Error::invalid_argument("build_pacs002: no instructions");
   Pacs002 doc;
-  const auto ts = instrs.front().payment.created_at ? instrs.front().payment.created_at
-                                                  : clock.now_seconds();
+  const auto ts =
+      instrs.front().payment.created_at ? instrs.front().payment.created_at : clock.now_seconds();
   doc.grp_hdr.msg_id = opts.msg_id.empty() ? "STSRPT" + std::to_string(ts) : opts.msg_id;
   doc.grp_hdr.cre_dt_tm = detail::format_isodatetime(clock.now_seconds());
   if (!opts.orgnl_msg_id.empty()) {
@@ -441,14 +444,13 @@ Result<std::string> build_pain002(std::span<const CreditTransferInstruction> ins
                                   const StatusReportOptions& opts, const Clock& clock) {
   if (instrs.empty()) return Error::invalid_argument("build_pain002: no instructions");
   Pain002 doc;
-  const auto ts = instrs.front().payment.created_at ? instrs.front().payment.created_at
-                                                  : clock.now_seconds();
+  const auto ts =
+      instrs.front().payment.created_at ? instrs.front().payment.created_at : clock.now_seconds();
   doc.grp_hdr.msg_id = opts.msg_id.empty() ? "CSTSRPT" + std::to_string(ts) : opts.msg_id;
   doc.grp_hdr.cre_dt_tm = detail::format_isodatetime(clock.now_seconds());
   if (!opts.orgnl_msg_id.empty()) {
     doc.orgnl_grp_inf_and_sts = OriginalGroupInfo{
-        opts.orgnl_msg_id,
-        opts.orgnl_msg_nm_id.empty() ? "pain.001.001.13" : opts.orgnl_msg_nm_id,
+        opts.orgnl_msg_id, opts.orgnl_msg_nm_id.empty() ? "pain.001.001.13" : opts.orgnl_msg_nm_id,
         opts.orgnl_cre_dt_tm};
   }
   OriginalPaymentInstruction op;
@@ -481,8 +483,8 @@ Result<std::string> build_pacs004(std::span<const CreditTransferInstruction> ins
   for (std::size_t i = 0; i < instrs.size(); ++i) {
     const auto& in = instrs[i];
     const Payment& p = in.payment;
-    const auto [ccy, suppl] =
-        detail::settlement_currency(detail::payment_asset(p), p.asset.issuer(), p.amount.to_string());
+    const auto [ccy, suppl] = detail::settlement_currency(detail::payment_asset(p),
+                                                          p.asset.issuer(), p.amount.to_string());
     PaymentReturnTx t;
     t.rtr_id = "RTR" + std::to_string(i + 1) + detail::safe_truncate(p.id, 29);
     t.orgnl_instr_id = detail::safe_truncate(p.id, 35);
