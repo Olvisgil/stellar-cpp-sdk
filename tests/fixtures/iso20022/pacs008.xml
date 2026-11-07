@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.14">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>PACS008TEST001</MsgId>
+      <CreDtTm>2026-11-06T10:30:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <CtrlSum>25000</CtrlSum>
+      <TtlIntrBkSttlmAmt Ccy="EUR">25000</TtlIntrBkSttlmAmt>
+      <IntrBkSttlmDt>2026-11-06</IntrBkSttlmDt>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+      </SttlmInf>
+      <InstgAgt>
+        <FinInstnId>
+          <BICFI>DEUTDEFF</BICFI>
+        </FinInstnId>
+      </InstgAgt>
+      <InstdAgt>
+        <FinInstnId>
+          <BICFI>COBADEFF</BICFI>
+        </FinInstnId>
+      </InstdAgt>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>INSTR-0001</InstrId>
+        <EndToEndId>E2E-INV-0001</EndToEndId>
+        <TxId>TX-0001</TxId>
+        <UETR>f47ac10b-58cc-4372-a567-0e02b2c3d479</UETR>
+      </PmtId>
+      <IntrBkSttlmAmt Ccy="EUR">25000</IntrBkSttlmAmt>
+      <IntrBkSttlmDt>2026-11-06</IntrBkSttlmDt>
+      <ChrgBr>SHAR</ChrgBr>
+      <Dbtr>
+        <Nm>Acme Corp GmbH</Nm>
+        <PstlAdr>
+          <Ctry>DE</Ctry>
+        </PstlAdr>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>DE89370400440532013000</IBAN>
+        </Id>
+      </DbtrAcct>
+      <DbtrAgt>
+        <FinInstnId>
+          <BICFI>DEUTDEFF</BICFI>
+        </FinInstnId>
+      </DbtrAgt>
+      <CdtrAgt>
+        <FinInstnId>
+          <BICFI>COBADEFF</BICFI>
+        </FinInstnId>
+      </CdtrAgt>
+      <Cdtr>
+        <Nm>Franz Mueller</Nm>
+        <PstlAdr>
+          <Ctry>DE</Ctry>
+        </PstlAdr>
+      </Cdtr>
+      <CdtrAcct>
+        <Id>
+          <Othr>
+            <Id>ACC-CDTR-01</Id>
+          </Othr>
+        </Id>
+      </CdtrAcct>
+      <Purp>
+        <Cd>GDDS</Cd>
+      </Purp>
+      <RmtInf>
+        <Ustrd>Invoice INV-2026-001</Ustrd>
+      </RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

@@ -34,6 +34,11 @@ smart contracts**, Horizon, and wallet/anchor SEPs.
   (spec-driven JSON args end-to-end), `TokenClient` (SEP-41) + event helpers.
 - **Infrastructure** — `Clock`/`RandomSource`/`Logger` injectables, `MockTransport`,
   multipart/SSE parsers, `install()` + `find_package(StellarSdk COMPONENTS …)`.
+- **ISO 20022** (`stellar::iso20022`, optional) — emit/parse pacs.008, pacs.002,
+  pacs.004, pain.001, pain.002, camt.053/054 XML mapped to Stellar payments;
+  batch totals, UETR, `SplmtryData` asset/amount preservation, status-report
+  reconciliation, `ValidationReport`. Output validates against the official
+  XSDs vendored in `iso20022/xsd/` — see `docs/iso20022-mapping.md`.
 
 ## Status
 

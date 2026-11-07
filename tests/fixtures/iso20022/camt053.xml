@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.14">
+  <BkToCstmrStmt>
+    <GrpHdr>
+      <MsgId>CAMT053TEST01</MsgId>
+      <CreDtTm>2026-11-06T23:59:59Z</CreDtTm>
+    </GrpHdr>
+    <Stmt>
+      <Id>STMT-2026-11-06</Id>
+      <ElctrncSeqNb>42</ElctrncSeqNb>
+      <CreDtTm>2026-11-06T23:59:59Z</CreDtTm>
+      <Acct>
+        <Id>
+          <IBAN>DE89370400440532013000</IBAN>
+        </Id>
+        <Ccy>EUR</Ccy>
+      </Acct>
+      <Bal>
+        <Tp>
+          <CdOrPrtry>
+            <Cd>OPBD</Cd>
+          </CdOrPrtry>
+        </Tp>
+        <Amt Ccy="EUR">1000</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Dt>
+          <Dt>2026-11-06</Dt>
+        </Dt>
+      </Bal>
+      <Ntry>
+        <NtryRef>NTRY-0001</NtryRef>
+        <Amt Ccy="EUR">250</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <RvslInd>false</RvslInd>
+        <Sts>
+          <Cd>BOOK</Cd>
+        </Sts>
+        <BookgDt>
+          <Dt>2026-11-06</Dt>
+        </BookgDt>
+        <ValDt>
+          <Dt>2026-11-06</Dt>
+        </ValDt>
+        <AcctSvcrRef>SVCR-0001</AcctSvcrRef>
+        <BkTxCd>
+          <Prtry>
+            <Cd>PMNT</Cd>
+          </Prtry>
+        </BkTxCd>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <EndToEndId>E2E-INV-0001</EndToEndId>
+              <TxId>TX-0001</TxId>
+            </Refs>
+            <Amt Ccy="EUR">250</Amt>
+            <CdtDbtInd>CRDT</CdtDbtInd>
+            <RltdPties>
+              <Dbtr>
+                <Pty>
+                  <Nm>Acme Corp GmbH</Nm>
+                </Pty>
+              </Dbtr>
+              <Cdtr>
+                <Pty>
+                  <Nm>Franz Mueller</Nm>
+                </Pty>
+              </Cdtr>
+            </RltdPties>
+            <RmtInf>
+              <Ustrd>Invoice INV-2026-001</Ustrd>
+            </RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+    </Stmt>
+  </BkToCstmrStmt>
+</Document>

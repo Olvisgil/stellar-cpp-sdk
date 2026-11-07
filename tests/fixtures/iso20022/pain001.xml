@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.13">
+  <CstmrCdtTrfInitn>
+    <GrpHdr>
+      <MsgId>PAIN001TEST01</MsgId>
+      <CreDtTm>2026-11-06T09:00:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <CtrlSum>100.5</CtrlSum>
+      <InitgPty>
+        <Nm>Disbursement Platform Ltd</Nm>
+      </InitgPty>
+    </GrpHdr>
+    <PmtInf>
+      <PmtInfId>PAIN001TEST01-PI1</PmtInfId>
+      <PmtMtd>TRF</PmtMtd>
+      <BtchBookg>false</BtchBookg>
+      <NbOfTxs>1</NbOfTxs>
+      <CtrlSum>100.5</CtrlSum>
+      <ReqdExctnDt>
+        <Dt>2026-11-07</Dt>
+      </ReqdExctnDt>
+      <Dbtr>
+        <Nm>Disbursement Platform Ltd</Nm>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>DE89370400440532013000</IBAN>
+        </Id>
+        <Ccy>EUR</Ccy>
+      </DbtrAcct>
+      <DbtrAgt>
+        <FinInstnId>
+          <BICFI>DEUTDEFF</BICFI>
+        </FinInstnId>
+      </DbtrAgt>
+      <ChrgBr>SLEV</ChrgBr>
+      <CdtTrfTxInf>
+        <PmtId>
+          <InstrId>RCVR-0001</InstrId>
+          <EndToEndId>E2E-RCVR-0001</EndToEndId>
+        </PmtId>
+        <Amt>
+          <InstdAmt Ccy="EUR">100.5</InstdAmt>
+        </Amt>
+        <Cdtr>
+          <Nm>Maria Receiver</Nm>
+          <CtctDtls>
+            <PhneNb>+49-30-901820</PhneNb>
+          </CtctDtls>
+        </Cdtr>
+        <CdtrAcct>
+          <Prxy>
+            <Tp>
+              <Prtry>WALLET</Prtry>
+            </Tp>
+            <Id>GBBD47IF6LWK7P7MDEVSCORPEVG4RLOFHXH3M7JFX2KNN3DLK4QZ4Z6L</Id>
+          </Prxy>
+        </CdtrAcct>
+        <RmtInf>
+          <Ustrd>Grant disbursement Nov</Ustrd>
+        </RmtInf>
+      </CdtTrfTxInf>
+    </PmtInf>
+  </CstmrCdtTrfInitn>
+</Document>

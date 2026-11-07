@@ -1,2 +1,11 @@
 stellar-cpp-sdk
 Copyright 2026 The stellar-cpp-sdk Authors
+
+This repository bundles ISO 20022 XML schemas (iso20022/xsd/*.xsd) produced by
+the ISO 20022 Registration Authority and published at https://www.iso20022.org.
+They are reproduced under the ISO 20022 Intellectual Property Right Policy,
+which permits free use and reproduction by all interested users.
+
+This repository is not the official ISO 20022 site. The sole source of
+up-to-date materials and information on ISO 20022 message standards and the
+Repository is https://www.iso20022.org/.

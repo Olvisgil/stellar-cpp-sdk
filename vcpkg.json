@@ -5,6 +5,7 @@
   "dependencies": [
     "libsodium",
     "curl",
+    "pugixml",
     "gtest"
   ]
 }

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(stellar-cpp-sdk VERSION 0.1.2 LANGUAGES CXX)
+project(stellar-cpp-sdk VERSION 0.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,6 +15,7 @@ option(STELLAR_SDK_BUILD_FUZZERS "Build libFuzzer targets (Clang)" OFF)
 option(STELLAR_SDK_ENABLE_SANITIZERS "Enable ASan+UBSan" OFF)
 option(STELLAR_SDK_ENABLE_TSAN "Enable TSan" OFF)
 option(STELLAR_SDK_WERROR "Warnings as errors" OFF)
+option(STELLAR_SDK_ENABLE_ISO20022 "Build the ISO 20022 component (requires pugixml)" ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(Warnings)
@@ -103,6 +104,43 @@ target_link_libraries(stellar_core PUBLIC stellar::xdr PRIVATE stellar_sodium CU
 stellar_set_warnings(stellar_core)
 
 # ---------------------------------------------------------------------------
+# stellar::iso20022 — ISO 20022 payments/statements (pugixml private)
+# ---------------------------------------------------------------------------
+if(STELLAR_SDK_ENABLE_ISO20022)
+  # pugixml: config package preferred (vcpkg/brew); bare system installs fall
+  # back to find_library/find_path with a normalized imported target, the
+  # same pattern StellarSdkConfig.cmake re-creates for consumers.
+  find_package(pugixml CONFIG QUIET)
+  if(NOT TARGET pugixml::pugixml)
+    find_library(PUGIXML_LIBRARY NAMES pugixml REQUIRED)
+    find_path(PUGIXML_INCLUDE_DIR pugixml.hpp REQUIRED)
+    add_library(pugixml::pugixml UNKNOWN IMPORTED)
+    set_target_properties(pugixml::pugixml PROPERTIES
+      IMPORTED_LOCATION "${PUGIXML_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${PUGIXML_INCLUDE_DIR}")
+  endif()
+
+  add_library(stellar_iso20022
+    src/iso20022/camt053.cpp
+    src/iso20022/camt054.cpp
+    src/iso20022/common.cpp
+    src/iso20022/marshal.cpp
+    src/iso20022/pacs002.cpp
+    src/iso20022/pacs004.cpp
+    src/iso20022/pacs008.cpp
+    src/iso20022/pain001.cpp
+    src/iso20022/pain002.cpp
+    src/iso20022/stellar_map.cpp
+    src/iso20022/unmarshal.cpp
+    src/iso20022/validate.cpp
+  )
+  add_library(stellar::iso20022 ALIAS stellar_iso20022)
+  target_compile_features(stellar_iso20022 PUBLIC cxx_std_20)
+  target_link_libraries(stellar_iso20022 PUBLIC stellar::core PRIVATE pugixml::pugixml)
+  stellar_set_warnings(stellar_iso20022)
+endif()
+
+# ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
 if(STELLAR_SDK_BUILD_TOOLS)
@@ -124,16 +162,20 @@ add_custom_target(check-xdr-pins
   COMMENT "Verifying vendored XDR inputs match xdr/VERSION")
 
 if(STELLAR_SDK_ENABLE_SANITIZERS)
-  foreach(t stellar_base stellar_xdr)
-    target_compile_options(${t} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
-    target_link_options(${t} PUBLIC -fsanitize=address,undefined)
+  foreach(t stellar_base stellar_xdr stellar_iso20022)
+    if(TARGET ${t})
+      target_compile_options(${t} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+      target_link_options(${t} PUBLIC -fsanitize=address,undefined)
+    endif()
   endforeach()
 endif()
 
 if(STELLAR_SDK_ENABLE_TSAN)
-  foreach(t stellar_base stellar_xdr)
-    target_compile_options(${t} PRIVATE -fsanitize=thread -fno-omit-frame-pointer)
-    target_link_options(${t} PUBLIC -fsanitize=thread)
+  foreach(t stellar_base stellar_xdr stellar_iso20022)
+    if(TARGET ${t})
+      target_compile_options(${t} PRIVATE -fsanitize=thread -fno-omit-frame-pointer)
+      target_link_options(${t} PUBLIC -fsanitize=thread)
+    endif()
   endforeach()
 endif()
 
@@ -166,6 +208,9 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
 set(_sdk_components base xdr core)
+if(TARGET stellar_iso20022)
+  list(APPEND _sdk_components iso20022)
+endif()
 foreach(comp IN LISTS _sdk_components)
   # Installed names match the build-tree aliases (stellar::base, stellar::xdr,
   # stellar::core) rather than stellar::stellar_<comp>.

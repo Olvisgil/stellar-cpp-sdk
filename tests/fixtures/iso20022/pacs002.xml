@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.16">
+  <FIToFIPmtStsRpt>
+    <GrpHdr>
+      <MsgId>STSRPT0001</MsgId>
+      <CreDtTm>2026-11-06T11:00:00Z</CreDtTm>
+    </GrpHdr>
+    <OrgnlGrpInfAndSts>
+      <OrgnlMsgId>PACS008TEST001</OrgnlMsgId>
+      <OrgnlMsgNmId>pacs.008.001.14</OrgnlMsgNmId>
+      <OrgnlCreDtTm>2026-11-06T10:30:00Z</OrgnlCreDtTm>
+    </OrgnlGrpInfAndSts>
+    <TxInfAndSts>
+      <StsId>STS-0001</StsId>
+      <OrgnlInstrId>INSTR-0001</OrgnlInstrId>
+      <OrgnlEndToEndId>E2E-INV-0001</OrgnlEndToEndId>
+      <OrgnlTxId>TX-0001</OrgnlTxId>
+      <TxSts>ACSC</TxSts>
+    </TxInfAndSts>
+    <TxInfAndSts>
+      <StsId>STS-0002</StsId>
+      <OrgnlInstrId>INSTR-0002</OrgnlInstrId>
+      <OrgnlEndToEndId>E2E-INV-0002</OrgnlEndToEndId>
+      <TxSts>RJCT</TxSts>
+      <StsRsnInf>
+        <Rsn>
+          <Cd>AC01</Cd>
+        </Rsn>
+        <AddtlInf>Incorrect account number</AddtlInf>
+      </StsRsnInf>
+    </TxInfAndSts>
+  </FIToFIPmtStsRpt>
+</Document>

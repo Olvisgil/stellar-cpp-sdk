@@ -20,6 +20,21 @@ if(NOT TARGET stellar_sodium)
   endif()
 endif()
 
+# The iso20022 component links pugixml privately; as a static archive the
+# dependency still propagates to consumers, so re-create the imported target
+# when it is missing (same discovery order as the SDK build).
+if(@STELLAR_SDK_ENABLE_ISO20022@ AND NOT TARGET pugixml::pugixml)
+  find_package(pugixml CONFIG QUIET)
+  if(NOT TARGET pugixml::pugixml)
+    find_library(_stellar_pugixml_library NAMES pugixml REQUIRED)
+    find_path(_stellar_pugixml_include pugixml.hpp REQUIRED)
+    add_library(pugixml::pugixml UNKNOWN IMPORTED)
+    set_target_properties(pugixml::pugixml PROPERTIES
+      IMPORTED_LOCATION "${_stellar_pugixml_library}"
+      INTERFACE_INCLUDE_DIRECTORIES "${_stellar_pugixml_include}")
+  endif()
+endif()
+
 include("${CMAKE_CURRENT_LIST_DIR}/StellarSdkTargets.cmake")
 
 # rpc/contract live inside stellar::core, so they resolve to the core lib.
@@ -28,4 +43,5 @@ set(StellarSdk_xdr_FOUND TRUE)
 set(StellarSdk_core_FOUND TRUE)
 set(StellarSdk_rpc_FOUND TRUE)
 set(StellarSdk_contract_FOUND TRUE)
+set(StellarSdk_iso20022_FOUND @STELLAR_SDK_ENABLE_ISO20022@)
 check_required_components(StellarSdk)

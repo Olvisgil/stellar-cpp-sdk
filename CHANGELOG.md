@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0
+
+- New optional `stellar::iso20022` component (`STELLAR_SDK_ENABLE_ISO20022`,
+  pugixml as a private dependency): emit and parse ISO 20022 XML for
+  pacs.008.001.14, pacs.002.001.16, pacs.004.001.15, pain.001.001.13,
+  pain.002.001.15, camt.053.001.14 and camt.054.001.14, with a Stellar
+  payment bridge (`Payment`/`Party`/`CreditTransferInstruction`), batch
+  totals, UETR generation, `SplmtryData` preservation of non-ISO assets and
+  exact 7-dp amounts, status-report flattening + `reconcile_instructions`,
+  and `ValidationReport` field validation. Official XSDs vendored under
+  `iso20022/xsd/`; emitted documents validate against them
+  (`tools/check_iso20022_xsd.sh`, needs `xmllint`).
+
 ## 0.1.2
 
 - `export.hpp` defaults `STELLAR_API` to static (empty); Windows consumers no
